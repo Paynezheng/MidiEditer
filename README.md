@@ -1,5 +1,7 @@
 MidiEditer: C++ MIDI Edit library
 =======================================
+MidiEditer: a library of C++ classes for reading/writing, play and real-time edit Standard MIDI files.  
+
 
 ## Midifile: C++ MIDI file parsing library
 
