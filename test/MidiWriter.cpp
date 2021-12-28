@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
    options.process(argc, argv);
 
    random_device rd;
-   mt19937 mt(rd());
-   uniform_int_distribution<int> starttime(0, 100);
+   mt19937 mt(rd());                                     // 随机数发生器
+   uniform_int_distribution<int> starttime(0, 100);      // 离散随机数
    uniform_int_distribution<int> duration(1, 8);
    uniform_int_distribution<int> pitch(36, 84);
    uniform_int_distribution<int> velocity(40, 100);
