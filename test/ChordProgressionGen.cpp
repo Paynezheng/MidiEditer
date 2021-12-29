@@ -1,10 +1,11 @@
 //
 // Programmer:    Payne Zheng <photosynthesi@outlook.com>
 // Creation Date: Tue Dec 28 10:12:18 UTC 2021
-// Last Modified: Tue Dec 28 10:12:18 UTC 2021
-// Filename:      midiediter/test/MidiConventer.cpp
+// Last Modified: Wed Dec 29 02:14:53 UTC 2021 Rename test/MidiConventer.cpp
+// Filename:      midiediter/test/ChordProgressionGen.cpp
 // Syntax:        C++11
 // Code           UTF-8
+// Usage:         生成指定和弦进行的单轨midi文件
 //
 
 
@@ -19,14 +20,14 @@ int main(int argc, char** argv) {
     if (argc != 2)
     {
         cout<< "--> param num error <--"<<endl;
-        cout<< "./MidiConventer midifile" <<endl;
+        cout<< "./ChordProgressionGen midifile" <<endl;
         return -1;
     }
     MidiFile midifile;
     string filename = argv[1];
     cout<< filename << endl;
     
-    int Notes[] =  {48, 50, 52, 53, 55, 57, 59};
+    int Notes[] =  {48, 50, 52, 53, 55, 57, 59};    // C D E F G A B
 
     int track   = 0;        // 默认0轨道
     int channel = 0;

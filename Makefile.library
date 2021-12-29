@@ -177,6 +177,9 @@ MidiFile.o: MidiFile.cpp MidiFile.h MidiEventList.h \
 
 MidiMessage.o: MidiMessage.cpp MidiMessage.h
 
+MidiConventer.o: MidiConventer.cpp MidiConventer.h MidiFile.cpp MidiFile.h MidiEventList.h \
+  MidiEvent.h MidiMessage.h Binasc.h
+
 Options.o: Options.cpp Options.h
 
 
