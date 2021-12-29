@@ -38,8 +38,10 @@ int main(int argc, char** argv) {
          if (midifile[track][event].isNoteOn())
             cout << midifile[track][event].getDurationInSeconds();
          cout << '\t' << hex;
-         for (int i=0; i<midifile[track][event].size(); i++)
+         for (auto i=0; i<midifile[track][event].size(); i++)
             cout << (int)midifile[track][event][i] << ' ';
+         cout<< '\t';
+         cout<< dec << midifile[track][event].getKeyNumber();   // 输出音符
          cout << endl;
       }
    }

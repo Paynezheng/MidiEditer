@@ -18,25 +18,27 @@ enum EChordProgressions {
 };
 
 enum ENotes {
-	EN_NOTE__C1 			= 36,
-	EN_NOTE__C1_SHARP		= 37,
-	EN_NOTE__D1_FLAT		= 37,
-	EN_NOTE__D1 			= 38,
-	EN_NOTE__D1_SHARP		= 39,
-	EN_NOTE__E1_FLAT		= 39,
-	EN_NOTE__E1				= 40,
-	EN_NOTE__F1_FLAT		= 40,
-	EN_NOTE__E1_SHARP		= 41,
-	EN_NOTE__F1				= 41,
-	EN_NOTE__F1_SHARP		= 42,
-	EN_NOTE__G1_FLAT		= 42,
-	EN_NOTE__G1				= 43,
-	EN_NOTE__G1_SHARP		= 44,
-	EN_NOTE__A1_FLAT		= 44,
-	EN_NOTE__A1				= 45,
-	EN_NOTE__A1_SHARP		= 46,
-	EN_NOTE__B1_FLAT		= 46,
-	EN_NOTE__B1				= 47
+	EN_NOTE__C 				= 0,
+	EN_NOTE__C_SHARP		= 1,
+	EN_NOTE__D_FLAT			= 1,
+	EN_NOTE__D 				= 2,
+	EN_NOTE__D_SHARP		= 3,
+	EN_NOTE__E_FLAT			= 3,
+	EN_NOTE__E				= 4,
+	EN_NOTE__F_FLAT			= 4,
+	EN_NOTE__E_SHARP		= 5,
+	EN_NOTE__F				= 5,
+	EN_NOTE__F_SHARP		= 6,
+	EN_NOTE__G_FLAT			= 6,
+	EN_NOTE__G				= 7,
+	EN_NOTE__G_SHARP		= 8,
+	EN_NOTE__A_FLAT			= 8,
+	EN_NOTE__A				= 9,
+	EN_NOTE__A_SHARP		= 10,
+	EN_NOTE__B_FLAT			= 10,
+	EN_NOTE__B				= 11,
+	EN_NOTE__C_FLAT			= 11,
+	EN_NOTE__B_SHARP		= 12
 };
 
 enum EChordName {
@@ -55,13 +57,12 @@ public:
 private:
 	int 		m_chord_base = 0;			// 和弦根音
 	int 		m_chord_name = 0;			// 和弦名
-	std::vector<int> notes;
+	std::vector<int> m_notes;
 };
 
 class ChordProgression {
 public:
 	void Reset();
-
 	std::vector<Chord> 		m_chords;
 private:
 
@@ -72,12 +73,13 @@ public:
 	MidiConventer (MidiFile* midifile, ChordProgression chord_progression, int duration);
 	void		Reset();
 	bool		Convent(int track, int bpm, int chords);									// all in one
-	// TODO: 如何转调?
-
-	// 量化 // 延音
+	
+	// 
+	// 量化 
 	bool		QuantifyTrack(int track, int duration);
 	bool		QuantifyNote(MidiEvent* midievent, int duration, int direction);			// 向前/后 量化一个事件
 
+	// 延音
 	// 去掉和弦外音和重复音
 
 
