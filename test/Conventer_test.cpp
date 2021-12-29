@@ -19,7 +19,17 @@ using namespace smf;
 
 int main(int argc, char** argv) {
     Chord chord_test(EN_NOTE__C, EN_CHORD_NAME__MAJOR_SEVENTH);
-    cout<< chord_test.IsChordInterior(48) << endl;
-    cout<< chord_test.IsChordInterior(49) << endl;
+    cout<< chord_test.IsChordInterior(EN_NOTE__C + 36) << endl;
+    cout<< chord_test.IsChordInterior(EN_NOTE__C_SHARP + 48) << endl;
+
+    ChordProgression* chord_progression_test = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7);
+    for (auto it:chord_progression_test->m_chords)
+    {
+        for (auto i:it.m_notes)
+        {
+            cout<< i << "\t";
+        }
+        cout<< endl;
+    }
     return 0;
 }
