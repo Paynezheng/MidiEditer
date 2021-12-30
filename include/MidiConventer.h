@@ -88,7 +88,7 @@ public:
 
 
 private:
-	MidiFile* m_midifile = nullptr;
+	MidiFile* 			m_midifile = nullptr;
 	ChordProgression*	m_chord_progression	= nullptr;
 	int 				m_duration;			// 量化一个事件的最小单位
 };
