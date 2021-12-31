@@ -10,11 +10,19 @@
 #pragma once
 #include <vector>
 #include <map>
-
+/**
+ * @brief 1           1-3-5
+4maj7   4-6-1-3
+6m7     6 1 3 5
+5sus4   5-1-2/5  5-7-2
+ * 
+ */
 namespace smf{
 enum EChordProgressions {
 	EN_CHORD_PROGRESSIONS_TYPE__C_BLUES						= 0,			// 12小节蓝调
-	EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7 				= 1				// 2516
+	EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7 				= 1,			// 2516
+	EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5			= 2,			// 
+	END														= 3 		
 };
 
 enum ENotes {
@@ -47,6 +55,34 @@ enum EChordName {
 	EN_CHORD_NAME__MAJOR_SEVENTH		= 3, // 大七
 	EN_CHORD_NAME__MINOR_SEVENTH		= 4, // 小七
 	EN_CHORD_NAME__SUS4_SEVENTH			= 5  // sus4
+};
+
+
+class Chord {
+public:
+	Chord(int chord_base, int chord_name);
+	bool 		IsChordInterior(int key);
+
+	int 		m_chord_base = 0;			// 和弦根音
+	int 		m_chord_name = 0;			// 和弦名
+	std::vector<int>		m_notes;
+};
+
+/**
+ * @brief 和弦进行类, 后续如果有特别的需求可以新写一个和弦进行类来初始化MidiConventer
+ * 			
+ */
+class ChordProgression {
+public:
+	ChordProgression(int chord_progression_id);
+	ChordProgression(int chord_progression_id, int modulation);						// TODO:提供转调
+	void 		Init(std::vector<std::tuple<int, int>>& chords);					// TODO:提供一个自定义的和弦进行 
+	void 		Reset();
+	bool		IsChordInterior(int beat, int key);
+	bool		IsChordInterior(double beat, int key);			// 提供一个更细粒度的查询
+// private:
+	std::map<int, std::tuple<Chord, int>>		m_chords;		// 序号-><和弦, beats> 
+	int			m_beats;	// 一共有几拍
 };
 
 } // end of namespace smf

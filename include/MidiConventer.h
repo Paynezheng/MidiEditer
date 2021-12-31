@@ -16,35 +16,6 @@
 
 namespace smf {
 
-
-
-
-class Chord {
-public:
-	Chord(int chord_base, int chord_name);
-	bool 		IsChordInterior(int key);
-
-	int 		m_chord_base = 0;			// 和弦根音
-	int 		m_chord_name = 0;			// 和弦名
-	std::vector<int>		m_notes;
-};
-
-/**
- * @brief 和弦进行类, 后续如果有特别的需求可以新写一个和弦进行类来初始化MidiConventer
- */
-class ChordProgression {
-public:
-	ChordProgression(int chord_progression_id);
-	ChordProgression(int chord_progression_id, int modulation);						// TODO:提供转调
-	void 		Init(std::vector<std::tuple<int, int>>& chords);					// TODO:提供一个自定义的和弦进行 
-	void 		Reset();
-	bool		IsChordInterior(int beat, int key);
-
-	std::map<int, std::tuple<Chord, int>>		m_chords;		// 序号-><和弦, beats> 
-	std::vector<std::tuple<Chord, int>> 		m_chords;		// 第几拍->和弦
-	int			m_beats;	// 一共有几拍
-};
-
 class MidiConventer {
 public:
 	MidiConventer (MidiFile* midifile, ChordProgression* chord_progression, int duration);
