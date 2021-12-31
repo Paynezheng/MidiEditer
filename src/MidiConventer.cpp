@@ -39,9 +39,9 @@ Chord::Chord(int chord_base, int chord_name):m_chord_base(chord_base), m_chord_n
             m_notes.push_back((chord_interior_base + 7) % 12);
             m_notes.push_back((chord_interior_base + 10) % 12);
             break;
-        case EN_CHORD_NAME__SUS_SEVENTH:
+        case EN_CHORD_NAME__SUS4_SEVENTH:
             m_notes.push_back(chord_interior_base);
-            m_notes.push_back((chord_interior_base + 4) % 12);
+            m_notes.push_back((chord_interior_base + 5) % 12);
             m_notes.push_back((chord_interior_base + 7) % 12);
             m_notes.push_back((chord_interior_base + 10) % 12);
         default:
