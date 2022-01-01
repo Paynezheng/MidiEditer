@@ -58,9 +58,10 @@ enum EChordName {
 	// SEVENTH CHORD
 	EN_CHORD_NAME__MAJOR_SEVENTH		= 100, // 大七
 	EN_CHORD_NAME__MINOR_SEVENTH		= 101, // 小七
-	EN_CHORD_NAME__SUS4_SEVENTH			= 102,  // sus4_minor_7
+	EN_CHORD_NAME__DOMINANT_SEVENTH		= 102, // dominant_seventh
+	EN_CHORD_NAME__SUS4_SEVENTH			= 103,  // sus4_minor_7
 
-	EN_CHORD_NAME__END					= 103
+	EN_CHORD_NAME__END					= 104
 };
 
 

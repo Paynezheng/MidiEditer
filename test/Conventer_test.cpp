@@ -22,18 +22,23 @@ int main(int argc, char** argv) {
     cout<< chord_test.IsChordInterior(EN_NOTE__C + 36) << endl;
     cout<< chord_test.IsChordInterior(EN_NOTE__C_SHARP + 48) << endl;
 
-    ChordProgression* chord_progression_test = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7);
-    cout<< "index" << "\t" << "chord" << "\t" << "duration" << endl;
+    ChordProgression* chord_progression_test = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5);
+    cout<< "index" << "\t" << "chord" << "\t\t" << "duration" << endl;
     for (auto it:chord_progression_test->m_chords) {
         cout<< it.first << "\t";
         for (auto i: get<0>(it.second).m_notes)
         {
             cout<< i << " ";
         }
-        cout<< get<1>(it.second);
-        cout<< endl;
+        cout<< "\t" << get<1>(it.second) << endl;
     }
 
+    if (argc != 2)
+    {
+        cout<< "--> param num error <--"<<endl;
+        cout<< "./Conventer_test midifile" <<endl;
+        return -1;
+    }
     MidiFile* midifile = new MidiFile();
     midifile->read(argv[1]);
     midifile->doTimeAnalysis();

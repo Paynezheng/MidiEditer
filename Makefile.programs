@@ -76,7 +76,7 @@ LIBPATH   = $(LIBDIR)/lib$(LIBFILE).a
 TARGDIR   = bin
 COMPILER  = LANG=C $(ENV) g++ $(ARCH)
 DEFINES   = 
-PREFLAGS  = -O3 -Wall -I$(INCDIR) $(DEFINES)
+PREFLAGS  = -g -O3 -Wall -I$(INCDIR) $(DEFINES)
 # Add -static flag to compile without dynamics libraries for better portability:
 #PREFLAGS += -static
 

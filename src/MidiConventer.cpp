@@ -26,8 +26,8 @@ void MidiConventer::Reset() {
 
 bool MidiConventer::QuantifyTrack(int track, int duration) {
     std::cout << "TPQ: " << m_midifile->getTicksPerQuarterNote() << std::endl;
-    std::cout << "\nTrack " << track << std::endl;
-    std::cout << "Tick\tSeconds\tDur\tMessage" << std::endl;
+    std::cout << "\nQuantifyTrack " << track << std::endl;
+    std::cout << "Tick\tSeconds\tDur\tMessage\tnew_Tick\tnew_Seconds\tnew_Dur\t" << std::endl;
     MidiEventList midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         std::cout << std::dec << midi_events[event].tick;
@@ -43,6 +43,10 @@ bool MidiConventer::QuantifyTrack(int track, int duration) {
         std::cout << std::endl;
     }
     return true;
+}
+
+bool QuantifyNote(MidiEvent& midievent, int direction) {
+    
 }
 
 } // end namespace smf

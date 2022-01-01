@@ -25,7 +25,7 @@ public:
 	// 
 	// 量化 
 	bool		QuantifyTrack(int track, int duration);
-	bool		QuantifyNote(MidiEvent* midievent, int duration, int direction);			// 向前/后 量化一个事件
+	bool		QuantifyNote(MidiEvent& midievent, int direction);			// 向前/后 量化一个事件
 
 	// 延音
 	// 去掉和弦外音和重复音
