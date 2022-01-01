@@ -52,9 +52,15 @@ enum ENotes {
 enum EChordName {
 	EN_CHORD_NAME__MAJOR				= 1, // 大三和弦
 	EN_CHORD_NAME__MINOR				= 2, // 小三
-	EN_CHORD_NAME__MAJOR_SEVENTH		= 3, // 大七
-	EN_CHORD_NAME__MINOR_SEVENTH		= 4, // 小七
-	EN_CHORD_NAME__SUS4_SEVENTH			= 5  // sus4
+	EN_CHORD_NAME__SUS4					= 3, // sus4	
+
+
+	// SEVENTH CHORD
+	EN_CHORD_NAME__MAJOR_SEVENTH		= 100, // 大七
+	EN_CHORD_NAME__MINOR_SEVENTH		= 101, // 小七
+	EN_CHORD_NAME__SUS4_SEVENTH			= 102,  // sus4_minor_7
+
+	EN_CHORD_NAME__END					= 103
 };
 
 
@@ -76,7 +82,7 @@ class ChordProgression {
 public:
 	ChordProgression(int chord_progression_id);
 	ChordProgression(int chord_progression_id, int modulation);						// TODO:提供转调
-	void 		Init(std::vector<std::tuple<int, int>>& chords);					// TODO:提供一个自定义的和弦进行 
+	void 		Init(std::vector<std::tuple<int, int, int>>& chords);				// TODO:index-><chord_enum, chord_base, chord_duration>
 	void 		Reset();
 	bool		IsChordInterior(int beat, int key);
 	bool		IsChordInterior(double beat, int key);			// 提供一个更细粒度的查询

@@ -15,6 +15,11 @@ Chord::Chord(int chord_base, int chord_name):m_chord_base(chord_base), m_chord_n
             m_notes.push_back((chord_interior_base + 3) % 12);
             m_notes.push_back((chord_interior_base + 7) % 12);
             break;
+        case EN_CHORD_NAME__SUS4:
+            m_notes.push_back(chord_interior_base);
+            m_notes.push_back((chord_interior_base + 5) % 12);
+            m_notes.push_back((chord_interior_base + 7) % 12);
+            break;
         case EN_CHORD_NAME__MAJOR_SEVENTH:
             m_notes.push_back(chord_interior_base);
             m_notes.push_back((chord_interior_base + 4) % 12);
@@ -28,10 +33,10 @@ Chord::Chord(int chord_base, int chord_name):m_chord_base(chord_base), m_chord_n
             m_notes.push_back((chord_interior_base + 10) % 12);
             break;
         case EN_CHORD_NAME__SUS4_SEVENTH:
-            m_notes.push_back(chord_interior_base);
-            m_notes.push_back((chord_interior_base + 5) % 12);
-            m_notes.push_back((chord_interior_base + 7) % 12);
-            m_notes.push_back((chord_interior_base + 10) % 12);
+            // m_notes.push_back(chord_interior_base);
+            // m_notes.push_back((chord_interior_base + 5) % 12);
+            // m_notes.push_back((chord_interior_base + 7) % 12);
+            // m_notes.push_back((chord_interior_base + 10) % 12);
         default:
             return;
     }
@@ -55,22 +60,57 @@ ChordProgression::ChordProgression(int chord_progression_id) {
             m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__C, EN_CHORD_NAME__MAJOR_SEVENTH), 4));
             m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR_SEVENTH), 4));
             break;
-        case EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5:
+        case EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5: // C
             m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__C, EN_CHORD_NAME__MAJOR), 4));
             m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__MAJOR_SEVENTH), 4));
             m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR_SEVENTH), 4));
-            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__MINOR_SEVENTH), 2));
+            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__SUS4), 2));
+            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__MAJOR), 2));
+            m_beats = 16;
         default:
             return;
     }
+
 }
 
-void ChordProgression::Init(std::vector<std::tuple<int, int>>& chords) {
-    // TODO
+void ChordProgression::Init(std::vector<std::tuple<int, int, int>>& chords) {
+    // TODO: 
 }	
 
 void ChordProgression::Reset() {
     m_chords.clear();
 }
+
+bool ChordProgression::IsChordInterior(int beat, int key) {
+    int pos = beat%m_beats;
+    int chord_begin_beat = 0;
+    for (auto iter: m_chords) {
+        if(chord_begin_beat + get<1>(iter.second) >= pos) {
+            const Chord& chord = get<0>(iter.second);
+            return chord.IsChordInterior(key);
+        }
+        else {
+            chord_begin_beat += get<1>(iter.second);
+        }
+    }
+    return false;
+}
+
+bool ChordProgression::IsChordInterior(double beat, int key) {
+    double pos = beat;
+    while(pos > m_beats) {
+        pos -= m_beats;
+    }
+    double chord_begin_beat = 0;
+    for (auto iter: m_chords) {
+        if(chord_begin_beat + get<1>(iter.second) >= pos) {
+            const Chord& chord = get<0>(iter.second);
+            return chord.IsChordInterior(key);
+        }
+        else {
+            chord_begin_beat += get<1>(iter.second);
+        }
+    }
+    return false;}
 
 } // end namespace smf

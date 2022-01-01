@@ -23,10 +23,14 @@ int main(int argc, char** argv) {
     cout<< chord_test.IsChordInterior(EN_NOTE__C_SHARP + 48) << endl;
 
     ChordProgression* chord_progression_test = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7);
+    cout<< "index" << "\t" << "chord" << "\t" << "duration" << endl;
     for (auto it:chord_progression_test->m_chords) {
-        for (auto i:it.m_notes) {
-            cout<< i << "\t";
+        cout<< it.first << "\t";
+        for (auto i: get<0>(it.second).m_notes)
+        {
+            cout<< i << " ";
         }
+        cout<< get<1>(it.second);
         cout<< endl;
     }
 
