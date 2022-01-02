@@ -29,6 +29,10 @@ public:
 
 	bool		IsChordInterior(const MidiEvent& midievent);
 	void		CleanChordVoiceover(int track);
+
+	void		CleanRecurNotes(int track);
+	
+	void		ProlongNotes(int track);
 	// 延音
 	// 去掉和弦外音和重复音
 
