@@ -24,11 +24,15 @@ void MidiConventer::Reset() {
     m_chord_progression = nullptr;
 }
 
-bool MidiConventer::QuantifyTrack(int track, int duration) {
-    std::cout << "TPQ: " << m_midifile->getTicksPerQuarterNote() << std::endl;
+double MidiConventer::GetBeat(int tick, int tpq) {
+    return double(tick)/tpq;
+}
+
+void MidiConventer::QuantifyTrack(int track, int duration) {
+    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
     std::cout << "\nQuantifyTrack " << track << std::endl;
-    std::cout << "Tick\tSeconds\tDur\tMessage\tnew_Tick\tnew_Seconds\tnew_Dur\t" << std::endl;
-    MidiEventList midi_events = (*m_midifile)[track];
+    std::cout << "Tick\tSeconds\tDur\tMessage\t\tbeat" << std::endl;
+    MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         std::cout << std::dec << midi_events[event].tick;
         std::cout << '\t' << std::dec << midi_events[event].seconds;
@@ -38,15 +42,65 @@ bool MidiConventer::QuantifyTrack(int track, int duration) {
         std::cout << '\t' << std::hex;
         for (auto i=0; i<midi_events[event].size(); i++)
         std::cout << (int)midi_events[event][i] << ' ';
+        // std::cout<< '\t';
+        // std::cout<< std::dec << midi_events[event].getKeyNumber();   // 输出音符
         std::cout<< '\t';
-        std::cout<< std::dec << midi_events[event].getKeyNumber();   // 输出音符
-        std::cout << std::endl;
+        std::cout<< std::dec << GetBeat(midi_events[event].tick, m_midifile->getTicksPerQuarterNote());
+        std::cout<< std::endl;
+
+        // me->makeNoteOn(aChannel, key, vel);
+	    // me->tick = aTick;
     }
-    return true;
+    std::cout<<std::endl;
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            QuantifyEvent(midi_events[event], 8, m_midifile->getTicksPerQuarterNote(), 0);
+        }
+    }
+    m_midifile->sortTracks();
 }
 
-bool QuantifyNote(MidiEvent& midievent, int direction) {
-    
+void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction) {
+    std::cout<< std::dec << GetBeat(midievent.tick, tpq);
+    double tar_beat = 0;
+    switch(unit_size) {
+        case 4:
+            tar_beat = (int)GetBeat(midievent.tick, tpq);
+            midievent.tick = int(tar_beat*tpq);
+            break;
+        case 8:
+            tar_beat = (int)(GetBeat(midievent.tick, tpq)/0.5) * 0.5;
+            midievent.tick = int(tar_beat*tpq);
+            break;
+        case 16:
+            tar_beat = (int)(GetBeat(midievent.tick, tpq)/0.25) * 0.25;
+            midievent.tick = int(tar_beat*tpq);
+        default:
+            return;
+    }
+    std::cout<< '\t' << GetBeat(midievent.tick, tpq) << std::endl;
+}
+
+bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
+{
+    return m_chord_progression->IsChordInterior((int)GetBeat(midievent.tick, m_midifile->getTicksPerQuarterNote()), midievent.getKeyNumber());
+}
+
+void MidiConventer::CleanChordVoiceover(int track) {
+    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
+    std::cout << "\nQuantifyTrack " << track << std::endl;
+    MidiEventList& midi_events = (*m_midifile)[track];
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            if (!IsChordInterior(midi_events[event]))
+            {
+                int aChannel = midi_events[event].getChannel();
+                int vel = midi_events[event].getVelocity();
+                midi_events[event].makeNoteOff(aChannel, midi_events[event].getKeyNumber(), vel);
+            }
+        }
+    }
+    m_midifile->sortTracks();
 }
 
 } // end namespace smf

@@ -22,11 +22,13 @@ public:
 	void		Reset();
 	bool		Convent(int track, int bpm, int chords);									// all in one
 	
-	// 
+	double		GetBeat(int tick, int tpq);
 	// 量化 
-	bool		QuantifyTrack(int track, int duration);
-	bool		QuantifyNote(MidiEvent& midievent, int direction);			// 向前/后 量化一个事件
+	void		QuantifyTrack(int track, int duration);
+	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction);			// 向前/后 量化一个事件
 
+	bool		IsChordInterior(const MidiEvent& midievent);
+	void		CleanChordVoiceover(int track);
 	// 延音
 	// 去掉和弦外音和重复音
 
