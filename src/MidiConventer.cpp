@@ -97,8 +97,7 @@ void MidiConventer::CleanChordVoiceover(int track) {
             // {
             //     midi_events[event].clear();
             // }
-            if (!IsChordInterior(midi_events[event]))
-            {
+            if (midi_events[event].isNote() && !IsChordInterior(midi_events[event])) {
                 midi_events[event].clear();
             }
         }
@@ -112,23 +111,31 @@ void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nQuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOn()) {
-            // int key = midi_events[event].getKeyNumber();
-            // if (key%12 < 7)
-            // {
-            //     midi_events[event].clear();
-            // }
-            if (!IsChordInterior(midi_events[event]))
-            {
+        // is time seq?
+        // MidiEventList::eventcompare
+        if (midi_events[event].isNote()) {
+            if (event-1 >= 0 && midi_events[event-1].isNote() && 
+                midi_events[event-1].tick == midi_events[event].tick) {
                 midi_events[event].clear();
             }
         }
     }
+    m_midifile->removeEmpties();
     // TODO: Delete Recur Notes
 }
 	
 void MidiConventer::ProlongNotes(int track) {
     // TODO: Prolong Notes
+    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
+    std::cout << "\nQuantifyTrack " << track << std::endl;
+    MidiEventList& midi_events = (*m_midifile)[track];
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            MidiEvent* offevent = midi_events[event].getLinkedEvent();
+            // set off event tick
+        }
+    }
+    m_midifile->removeEmpties();
 }
 
 } // end namespace smf
