@@ -57,7 +57,7 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
             QuantifyEvent(midi_events[event], 8, m_midifile->getTicksPerQuarterNote(), 0);
         }
     }
-    m_midifile->sortTracks();
+    // m_midifile->sortTracks();
 }
 
 void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction) {
@@ -92,15 +92,43 @@ void MidiConventer::CleanChordVoiceover(int track) {
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
+            // int key = midi_events[event].getKeyNumber();
+            // if (key%12 < 7)
+            // {
+            //     midi_events[event].clear();
+            // }
             if (!IsChordInterior(midi_events[event]))
             {
-                int aChannel = midi_events[event].getChannel();
-                int vel = midi_events[event].getVelocity();
-                midi_events[event].makeNoteOff(aChannel, midi_events[event].getKeyNumber(), vel);
+                midi_events[event].clear();
             }
         }
     }
-    m_midifile->sortTracks();
+    m_midifile->removeEmpties();
+    // m_midifile->sortTracks();
+}
+
+void MidiConventer::CleanRecurNotes(int track) {
+    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
+    std::cout << "\nQuantifyTrack " << track << std::endl;
+    MidiEventList& midi_events = (*m_midifile)[track];
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            // int key = midi_events[event].getKeyNumber();
+            // if (key%12 < 7)
+            // {
+            //     midi_events[event].clear();
+            // }
+            if (!IsChordInterior(midi_events[event]))
+            {
+                midi_events[event].clear();
+            }
+        }
+    }
+    // TODO: Delete Recur Notes
+}
+	
+void MidiConventer::ProlongNotes(int track) {
+    // TODO: Prolong Notes
 }
 
 } // end namespace smf

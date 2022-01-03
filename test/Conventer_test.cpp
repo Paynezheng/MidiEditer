@@ -48,6 +48,8 @@ int main(int argc, char** argv) {
     if (tracks == 1) {
         MidiConventer* midi_conventer = new MidiConventer(midifile, chord_progression_test, 1);
         midi_conventer->QuantifyTrack(0, 1);
+        midi_conventer->CleanChordVoiceover(0);
+        m_midifile->sortTracks();
         midifile->write("payne");
     }
     return 0;

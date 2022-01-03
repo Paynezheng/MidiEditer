@@ -61,11 +61,11 @@ bool Chord::IsChordInterior(int key) {
 ChordProgression::ChordProgression(int chord_progression_id) {
     switch(chord_progression_id){
         case EN_CHORD_PROGRESSIONS_TYPE__C_BLUES:
-        case EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7:
-            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__D, EN_CHORD_NAME__MINOR_SEVENTH), 4));
-            m_chords.emplace(2, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__DOMINANT_SEVENTH), 4));
-            m_chords.emplace(3, std::make_tuple(Chord(EN_NOTE__C, EN_CHORD_NAME__MAJOR_SEVENTH), 4));
-            m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR_SEVENTH), 4));
+        case EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7:
+            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__C, EN_CHORD_NAME__MAJOR_SEVENTH), 4));
+            m_chords.emplace(2, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR_SEVENTH), 4));
+            m_chords.emplace(3, std::make_tuple(Chord(EN_NOTE__D, EN_CHORD_NAME__MINOR_SEVENTH), 4));
+            m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__DOMINANT_SEVENTH), 4));
             m_beats = 16;
             break;
         case EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5:

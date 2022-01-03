@@ -20,7 +20,7 @@
 namespace smf{
 enum EChordProgressions {
 	EN_CHORD_PROGRESSIONS_TYPE__C_BLUES						= 0,			// 12小节蓝调
-	EN_CHORD_PROGRESSIONS_TYPE__Dm7_G7_CM7_Am7 				= 1,			// 2516
+	EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7 				= 1,			// 1625
 	EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5			= 2,			// 
 	END														= 3 		
 };
