@@ -18,6 +18,15 @@
  * 
  */
 namespace smf{
+enum ENoteDuration {
+	EN_NOTE_DURATION__MUTE					= 0,
+	EN_NOTE_DURATION__WHOLE					= 1,	// 全音符
+	EN_NOTE_DURATION__HALF					= 2,
+	EN_NOTE_DURATION__QUARTER				= 3,
+	EN_NOTE_DURATION__SEMIQUAVER			= 4,
+	EN_NOTE_DURATION__END					= 5
+};
+
 enum EChordProgressions {
 	EN_CHORD_PROGRESSIONS_TYPE__C_BLUES						= 0,			// 12小节蓝调
 	EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7 				= 1,			// 1625

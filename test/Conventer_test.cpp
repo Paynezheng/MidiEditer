@@ -45,12 +45,14 @@ int main(int argc, char** argv) {
     midifile->linkNotePairs();
 
     int tracks = midifile->getTrackCount();
+    MidiConventer* midi_conventer = new MidiConventer(midifile, chord_progression_test, 1);
+    midi_conventer->PrintMidifile();
     if (tracks == 1) {
-        MidiConventer* midi_conventer = new MidiConventer(midifile, chord_progression_test, 1);
         midi_conventer->QuantifyTrack(0, 1);
         midi_conventer->CleanChordVoiceover(0);
         midifile->sortTracks();
-        midifile->write("payne");
+        // midifile->write("payne");
     }
+    midi_conventer->PrintMidifile();
     return 0;
 }

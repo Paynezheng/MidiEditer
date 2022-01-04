@@ -29,28 +29,8 @@ double MidiConventer::GetBeat(int tick, int tpq) {
 }
 
 void MidiConventer::QuantifyTrack(int track, int duration) {
-    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
     std::cout << "\nQuantifyTrack " << track << std::endl;
-    std::cout << "Tick\tSeconds\tDur\tMessage\t\tbeat" << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
-    for (int event=0; event< midi_events.size(); event++) {
-        std::cout << std::dec << midi_events[event].tick;
-        std::cout << '\t' << std::dec << midi_events[event].seconds;
-        std::cout << '\t';
-        if (midi_events[event].isNoteOn())
-        std::cout << midi_events[event].getDurationInSeconds();
-        std::cout << '\t' << std::hex;
-        for (auto i=0; i<midi_events[event].size(); i++)
-        std::cout << (int)midi_events[event][i] << ' ';
-        // std::cout<< '\t';
-        // std::cout<< std::dec << midi_events[event].getKeyNumber();   // 输出音符
-        std::cout<< '\t';
-        std::cout<< std::dec << GetBeat(midi_events[event].tick, m_midifile->getTicksPerQuarterNote());
-        std::cout<< std::endl;
-
-        // me->makeNoteOn(aChannel, key, vel);
-	    // me->tick = aTick;
-    }
     std::cout<<std::endl;
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
@@ -87,16 +67,10 @@ bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
 }
 
 void MidiConventer::CleanChordVoiceover(int track) {
-    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
-    std::cout << "\nQuantifyTrack " << track << std::endl;
+    std::cout << "\nCleanChordVoiceover Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
-            // int key = midi_events[event].getKeyNumber();
-            // if (key%12 < 7)
-            // {
-            //     midi_events[event].clear();
-            // }
             if (midi_events[event].isNote() && !IsChordInterior(midi_events[event])) {
                 midi_events[event].clear();
             }
@@ -107,8 +81,7 @@ void MidiConventer::CleanChordVoiceover(int track) {
 }
 
 void MidiConventer::CleanRecurNotes(int track) {
-    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
-    std::cout << "\nQuantifyTrack " << track << std::endl;
+    std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         // is time seq?
@@ -116,26 +89,58 @@ void MidiConventer::CleanRecurNotes(int track) {
         if (midi_events[event].isNote()) {
             if (event-1 >= 0 && midi_events[event-1].isNote() && 
                 midi_events[event-1].tick == midi_events[event].tick) {
+                MidiEvent* offevent = midi_events[event].getLinkedEvent();
                 midi_events[event].clear();
+                if (offevent != nullptr) 
+                    offevent->clear();
             }
         }
     }
     m_midifile->removeEmpties();
-    // TODO: Delete Recur Notes
 }
 	
 void MidiConventer::ProlongNotes(int track) {
-    // TODO: Prolong Notes
     std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
     std::cout << "\nQuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
-            MidiEvent* offevent = midi_events[event].getLinkedEvent();
+            MidiEvent* offevent = midi_events[event].getLinkedEvent();      // 应该这个就是这个音的结束事件...
+            if (offevent != nullptr) {
+                double tar_beat = (int)(GetBeat(midi_events[event].tick, m_midifile->getTicksPerQuarterNote())/0.5) * 0.5;
+            }
             // set off event tick
         }
     }
     m_midifile->removeEmpties();
+}
+
+void MidiConventer::PrintMidifile() {
+    int tracks = m_midifile->getTrackCount();
+    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
+    if (tracks > 1) std::cout << "TRACKS: " << tracks << std::endl;
+    for (int track=0; track<tracks; track++) {
+        std::cout << "\nTrack " << track << std::endl;
+        std::cout << "Tick\tSeconds\tDur\tbeat\tMessage" << std::endl;
+        const MidiEventList& midi_events = (*m_midifile)[track];
+        for (int event=0; event< midi_events.size(); event++) {
+            std::cout << std::dec << midi_events[event].tick;
+            std::cout << '\t' << std::dec << midi_events[event].seconds;
+            std::cout << '\t';
+            if (midi_events[event].isNoteOn())
+            std::cout << midi_events[event].getDurationInSeconds();
+            std::cout << '\t';
+            std::cout<< std::dec << GetBeat(midi_events[event].tick, m_midifile->getTicksPerQuarterNote());
+            std::cout << '\t' << std::hex;
+            for (auto i=0; i<midi_events[event].size(); i++)
+            std::cout << (int)midi_events[event][i] << ' ';
+            // std::cout<< '\t';
+            // std::cout<< std::dec << midi_events[event].getKeyNumber();   // 输出音符
+            std::cout<< '\t';
+            std::cout<< std::endl;
+        }
+        std::cout<<std::endl;
+    }
 }
 
 } // end namespace smf

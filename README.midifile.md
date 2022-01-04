@@ -16,3 +16,12 @@ MidiMessage： MidiEvents 的基类, 表示MIDI消息(或者元数据)的无符�
 Binasc: MidiFile 的一个帮助类, 允许以(表示二进制MIDI标准的)ASCII格式读取/写入 MIDI 文件
 
 Option: 从终端读取参数的一个辅助类
+
+Others
+______
+
+TPQ: Ticks per quarter note.
+
+BPM: Beat per minute.
+
+TPQ表示事件/音符的位置, BPM表示音符/事件的速度. TPQ是MidiFile属性, BPM是MidiEvent属性.

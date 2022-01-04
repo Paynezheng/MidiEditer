@@ -20,21 +20,18 @@ class MidiConventer {
 public:
 	MidiConventer (MidiFile* midifile, ChordProgression* chord_progression, int duration);
 	void		Reset();
-	bool		Convent(int track, int bpm, int chords);									// all in one
-	
-	double		GetBeat(int tick, int tpq);
-	// 量化 
+	bool		Convent(int track, int bpm, int chords);
+
 	void		QuantifyTrack(int track, int duration);
-	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction);			// 向前/后 量化一个事件
-
-	bool		IsChordInterior(const MidiEvent& midievent);
 	void		CleanChordVoiceover(int track);
-
 	void		CleanRecurNotes(int track);
-	
 	void		ProlongNotes(int track);
-	// 延音
-	// 去掉和弦外音和重复音
+	void 		PrintMidifile();
+
+private:
+	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction);
+	bool		IsChordInterior(const MidiEvent& midievent);
+	double		GetBeat(int tick, int tpq);
 
 
 private:
