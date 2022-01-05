@@ -24,8 +24,8 @@ void MidiConventer::Reset() {
     m_chord_progression = nullptr;
 }
 
-double MidiConventer::GetBeat(int tick, int tpq) {
-    return double(tick)/tpq;
+double MidiConventer::GetBeat(int tick) {
+    return double(tick)/m_midifile->getTicksPerQuarterNote();
 }
 
 void MidiConventer::QuantifyTrack(int track, int duration) {
@@ -38,6 +38,8 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) {
             QuantifyEvent(midi_events[event], 8, m_midifile->getTicksPerQuarterNote(), 0);
+            MidiEvent* offevent = midi_events[event].getLinkedEvent();
+            QuantifyEvent(*offevent, 8, m_midifile->getTicksPerQuarterNote(), 0);
         }
     }
     // m_midifile->sortTracks();
@@ -45,29 +47,42 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
 
 void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction) {
     // TODO： 将事件移动到最近的节点上
-    std::cout<< std::dec << GetBeat(midievent.tick, tpq);
-    double tar_beat = 0;
+    std::cout<< std::dec << GetBeat(midievent.tick);
+    double left_beat = 0;
+    double right_beat = 0;
     switch(unit_size) {
         case 4:
-            tar_beat = (int)GetBeat(midievent.tick, tpq);
-            midievent.tick = int(tar_beat*tpq);
+            left_beat = (int)GetBeat(midievent.tick);
+            right_beat = left_beat + 1;
             break;
         case 8:
-            tar_beat = (int)(GetBeat(midievent.tick, tpq)/0.5) * 0.5;
-            midievent.tick = int(tar_beat*tpq);
+            left_beat = (int)(GetBeat(midievent.tick)/0.5) * 0.5;
+            right_beat = left_beat + 0.5;
             break;
         case 16:
-            tar_beat = (int)(GetBeat(midievent.tick, tpq)/0.25) * 0.25;
-            midievent.tick = int(tar_beat*tpq);
+            left_beat = (int)(GetBeat(midievent.tick)/0.25) * 0.25;
+            right_beat = left_beat + 0.25;
+            break;
         default:
             return;
     }
-    std::cout<< '\t' << GetBeat(midievent.tick, tpq) << std::endl;
+    // 向左移
+    if (direction == -1) {
+        midievent.tick = int((left_beat - 4.0 / unit_size)*tpq);
+        return;
+    }
+    int left_tick = int(left_beat*tpq);
+    int right_tick = int(right_beat*tpq);
+    if (midievent.tick - left_tick > right_tick - midievent.tick)
+        midievent.tick = right_tick;
+    else
+        midievent.tick = left_tick;
+    std::cout<< '\t' << GetBeat(midievent.tick) << std::endl;
 }
 
 bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
 {
-    return m_chord_progression->IsChordInterior((int)GetBeat(midievent.tick, m_midifile->getTicksPerQuarterNote()), midievent.getKeyNumber());
+    return m_chord_progression->IsChordInterior((int)GetBeat(midievent.tick), midievent.getKeyNumber());
 }
 
 void MidiConventer::CleanChordVoiceover(int track) {
@@ -111,7 +126,7 @@ void MidiConventer::ProlongNotes(int track) {
         if (midi_events[event].isNoteOn()) {
             MidiEvent* offevent = midi_events[event].getLinkedEvent();      // 应该这个就是这个音的结束事件...
             if (offevent != nullptr) {
-                double tar_beat = (int)(GetBeat(midi_events[event].tick, m_midifile->getTicksPerQuarterNote())/0.5) * 0.5;
+                double tar_beat = (int)(GetBeat(midi_events[event].tick)/0.5) * 0.5;
             }
             // set off event tick
         }
@@ -134,7 +149,7 @@ void MidiConventer::PrintMidifile() {
             if (midi_events[event].isNoteOn())
             std::cout << midi_events[event].getDurationInSeconds();
             std::cout << '\t';
-            std::cout<< std::dec << GetBeat(midi_events[event].tick, m_midifile->getTicksPerQuarterNote());
+            std::cout<< std::dec << GetBeat(midi_events[event].tick);
             std::cout << '\t' << std::hex;
             for (auto i=0; i<midi_events[event].size(); i++)
             std::cout << (int)midi_events[event][i] << ' ';
@@ -145,6 +160,10 @@ void MidiConventer::PrintMidifile() {
         }
         std::cout<<std::endl;
     }
+}
+
+bool MidiConventer::IsNoteValid(MidiEvent& on, MidiEvent& off) {
+
 }
 
 } // end namespace smf

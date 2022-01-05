@@ -31,7 +31,9 @@ public:
 private:
 	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction);
 	bool		IsChordInterior(const MidiEvent& midievent);
-	double		GetBeat(int tick, int tpq);
+	bool 		IsNoteValid(MidiEvent& on, MidiEvent& off);
+	double		GetBeat(int tick);
+
 
 
 private:
