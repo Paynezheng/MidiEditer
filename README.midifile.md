@@ -18,7 +18,7 @@ Binasc: MidiFile 的一个帮助类, 允许以(表示二进制MIDI标准的)ASCI
 Option: 从终端读取参数的一个辅助类
 
 Others
-______
+------
 
 TPQ: Ticks per quarter note.
 

@@ -33,6 +33,9 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
     MidiEventList& midi_events = (*m_midifile)[track];
     std::cout<<std::endl;
     for (int event=0; event< midi_events.size(); event++) {
+        // TODO: 需要移动两个事件(on && off)
+        // 一个note不能越过小节线
+        // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) {
             QuantifyEvent(midi_events[event], 8, m_midifile->getTicksPerQuarterNote(), 0);
         }
@@ -41,6 +44,7 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
 }
 
 void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction) {
+    // TODO： 将事件移动到最近的节点上
     std::cout<< std::dec << GetBeat(midievent.tick, tpq);
     double tar_beat = 0;
     switch(unit_size) {
@@ -84,8 +88,8 @@ void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
-        // is time seq?
-        // MidiEventList::eventcompare
+        // MidiEventList::eventcompare 保证了MidiEventList的时间序
+        // 读on事件后，off事件出现前所有的onnote都删除
         if (midi_events[event].isNote()) {
             if (event-1 >= 0 && midi_events[event-1].isNote() && 
                 midi_events[event-1].tick == midi_events[event].tick) {

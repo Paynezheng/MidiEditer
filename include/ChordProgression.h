@@ -21,10 +21,11 @@ namespace smf{
 enum ENoteDuration {
 	EN_NOTE_DURATION__MUTE					= 0,
 	EN_NOTE_DURATION__WHOLE					= 1,	// 全音符
-	EN_NOTE_DURATION__HALF					= 2,
-	EN_NOTE_DURATION__QUARTER				= 3,
-	EN_NOTE_DURATION__SEMIQUAVER			= 4,
-	EN_NOTE_DURATION__END					= 5
+	EN_NOTE_DURATION__HALF					= 2,	// 二分
+	EN_NOTE_DURATION__QUARTER				= 3,	// 四分
+	EN_NOTE_DURATION__QUAVER				= 4,	// 八分
+	EN_NOTE_DURATION__SEMIQUAVER			= 5,	// 十六分
+	EN_NOTE_DURATION__END					= 6
 };
 
 enum EChordProgressions {

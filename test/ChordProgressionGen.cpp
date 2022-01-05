@@ -43,6 +43,8 @@ int main(int argc, char** argv) {
         int endtick   = starttick + int(tpq * (i+2));       // 固定音长
         midifile.addNoteOn(track, starttick, channel, key, 40);
         midifile.addNoteOff(track, endtick, channel, key);
+        // midifile.addNoteOn(track, starttick, channel, key + 12, 40);
+        // midifile.addNoteOff(track, endtick, channel, key + 12);
     }
     midifile.sortTracks();  // Need to sort tracks since added events are
                             // appended to track in random tick order.

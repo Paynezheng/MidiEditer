@@ -35,15 +35,18 @@ int main(int argc, char** argv) {
         cout<< "file tpq not the same" <<endl;
         return -1;
     }
-    int chord_progression; // => tonumber(argv[3]); // 先默认一个1625
-
+    int param_chord_progression = atoi(argv[3]); // 先默认一个1625
+    ChordProgression* chord_progression;
     int tracks = input_user->getTrackCount();
-    ChordProgression* chord_progression_1625 = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7);    // 1625
-    MidiConventer* midi_conventer = new MidiConventer(input_user, chord_progression_1625, 1);
+    if (param_chord_progression == 1625)
+        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7);    // 1625
+    else
+        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5);
+    MidiConventer* midi_conventer = new MidiConventer(input_user, chord_progression, 1);
 
     for (int track = 0; track < tracks; track++) {
-        midi_conventer->QuantifyTrack(track, 1);
-        midi_conventer->CleanChordVoiceover(track);
+        // midi_conventer->QuantifyTrack(track, 1);
+        // midi_conventer->CleanChordVoiceover(track);
         midi_conventer->CleanRecurNotes(track);
         input_user->sortTracks();
     }
