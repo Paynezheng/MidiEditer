@@ -78,7 +78,7 @@ enum EChordName {
 
 class Chord {
 public:
-	Chord();
+	Chord() {};
 	Chord(int chord_base, int chord_name);
 	bool 		IsChordInterior(int key);
 

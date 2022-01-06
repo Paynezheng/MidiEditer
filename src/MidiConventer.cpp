@@ -38,9 +38,9 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
         // 一个note不能越过小节线
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) {
-            QuantifyEvent(midi_events[event], 8, 0);
+            QuantifyEvent(midi_events[event], 16, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
-            QuantifyEvent(*offevent, 8, 0);
+            // QuantifyEvent(*offevent, 16, 0);
             CuttingNote(midi_events[event], *offevent);
         }
     }
@@ -118,19 +118,25 @@ void MidiConventer::CleanChordVoiceover(int track) {
 void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
-    std::set<MidiEvent&> recur_notes;
+    std::set<int> recur_notes;      // 按序号删除
 
-    int current_on_event = 0;
+    int on_tick = -1;
+    int off_tick = -1;
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
-            if (current_on_event == 0) {
-                current_on_event = event;
+            if (on_tick == -1) {
+                on_tick = midi_events[event].tick;
+                MidiEvent* offevent = midi_events[event].getLinkedEvent();
+                off_tick = offevent->tick;
                 continue;
             }
+            else if (midi_events[event].tick > off_tick) {
+                on_tick = midi_events[event].tick;
+                MidiEvent* offevent = midi_events[event].getLinkedEvent();
+                off_tick = offevent->tick;
+            }
             else {
-                MidiEvent& recur_event = midi_events[event];
-                recur_notes.insert(recur_event);
-
+                recur_notes.insert(event);
             }
         }
         else if(midi_events[event].isNoteOff())
