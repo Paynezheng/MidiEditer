@@ -1,7 +1,7 @@
 //
 // Programmer:    Payne Zheng <photosynthesi@outlook.com>
 // Creation Date: Wed Dec 29 02:02:10 UTC 2021
-// Last Modified: Wed Dec 29 09:37:18 UTC 2021 
+// Last Modified: Thu Jan  6 07:17:45 UTC 2022
 // Filename:      midiediter/include/MidiConventer.h
 // Syntax:        C++11
 // Code           UTF-8
@@ -29,9 +29,10 @@ public:
 	void 		PrintMidifile();
 
 private:
-	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction);
+	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int direction);
+	void		CuttingNote(MidiEvent& on, MidiEvent& off);
 	bool		IsChordInterior(const MidiEvent& midievent);
-	bool 		IsNoteValid(MidiEvent& on, MidiEvent& off);
+	bool 		CheckNoteValid(const MidiEvent& on, const MidiEvent& off);
 	double		GetBeat(int tick);
 
 

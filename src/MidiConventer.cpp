@@ -1,7 +1,7 @@
 //
 // Programmer:    Payne Zheng <photosynthesi@outlook.com>
-// Creation Date: Wed std::dec 29 02:02:10 UTC 2021
-// Last Modified: Wed std::dec 29 09:37:18 UTC 2021
+// Creation Date: Wed Dec 29 02:02:10 UTC 2021
+// Last Modified: Thu Jan  6 07:17:45 UTC 2022
 // Filename:      midiediter/src/MidiConventer.cpp
 // Syntax:        C++11
 // Code           UTF-8
@@ -10,6 +10,7 @@
 #include "MidiConventer.h"
 #include <stdlib.h>
 #include <iostream>
+#include <set>
 
 
 namespace smf {
@@ -37,15 +38,24 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
         // 一个note不能越过小节线
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) {
-            QuantifyEvent(midi_events[event], 8, m_midifile->getTicksPerQuarterNote(), 0);
+            QuantifyEvent(midi_events[event], 8, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
-            QuantifyEvent(*offevent, 8, m_midifile->getTicksPerQuarterNote(), 0);
+            QuantifyEvent(*offevent, 8, 0);
+            CuttingNote(midi_events[event], *offevent);
         }
     }
     // m_midifile->sortTracks();
 }
 
-void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, int direction) {
+/**
+ * @brief 量化一个on/off event, 每个事件会移动到最近的节点上, 所以有可能会导致跨小节跨和弦(丢失信息)的问题
+ * 
+ * @param midievent 
+ * @param unit_size 量化单位, 2,4,8等分别表示二/四/十六分
+ * @param direction 量化方向,-1向左移动,默认移动到最近节点
+ */
+void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) {
+    int tpq = m_midifile->getTicksPerQuarterNote();
     // TODO： 将事件移动到最近的节点上
     std::cout<< std::dec << GetBeat(midievent.tick);
     double left_beat = 0;
@@ -71,6 +81,9 @@ void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int tpq, 
         midievent.tick = int((left_beat - 4.0 / unit_size)*tpq);
         return;
     }
+    else if(direction == 1) {
+        // TODO:
+    }
     int left_tick = int(left_beat*tpq);
     int right_tick = int(right_beat*tpq);
     if (midievent.tick - left_tick > right_tick - midievent.tick)
@@ -91,7 +104,10 @@ void MidiConventer::CleanChordVoiceover(int track) {
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
             if (midi_events[event].isNote() && !IsChordInterior(midi_events[event])) {
+                MidiEvent* offevent = midi_events[event].getLinkedEvent();
                 midi_events[event].clear();
+                if (offevent != nullptr) 
+                    offevent->clear();
             }
         }
     }
@@ -102,7 +118,25 @@ void MidiConventer::CleanChordVoiceover(int track) {
 void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
+    std::set<MidiEvent&> recur_notes;
+
+    int current_on_event = 0;
     for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            if (current_on_event == 0) {
+                current_on_event = event;
+                continue;
+            }
+            else {
+                MidiEvent& recur_event = midi_events[event];
+                recur_notes.insert(recur_event);
+
+            }
+        }
+        else if(midi_events[event].isNoteOff())
+        {
+
+        }
         // MidiEventList::eventcompare 保证了MidiEventList的时间序
         // 读on事件后，off事件出现前所有的onnote都删除
         if (midi_events[event].isNote()) {
@@ -162,8 +196,53 @@ void MidiConventer::PrintMidifile() {
     }
 }
 
-bool MidiConventer::IsNoteValid(MidiEvent& on, MidiEvent& off) {
+bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) {
+    double on_beat = GetBeat(on.tick);
+    double off_beat = GetBeat(off.tick);
+    // 检查跨和弦
+    int on_chord_seq = m_chord_progression->GetChordSeq(on_beat, 0);
+    int off_chord_seq = m_chord_progression->GetChordSeq(off_beat, 1);
+    if (on_chord_seq != off_chord_seq) {
+        return false;
+    }
+    // 检查跨小节 (先按4拍一小节处理..)
+    // auto DoubleMod = [beat = m_chord_progression->m_beats](double x) -> int {
+    //     int section_seq = 1;
+    //     while (x >= beat) {
 
+    //     }
+    //     return x+y+v1+(*v2);
+    // };
+    int on_section_seq = int (on_beat / 4);
+    int off_section_seq = int (off_beat / 4);
+    if (on_section_seq != off_section_seq) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 处理跨和弦和跨小节, 需要先量化event on/off到最近的节点上
+ * 跨和弦, 直接将off事件的事件挪到on事件和弦的末尾  (暂时逻辑)
+ * 跨小节, 直接将off事件的事件挪到on事件小节的末尾  (暂时逻辑)
+ * @param on 
+ * @param off 
+ */
+void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off) {
+    double on_beat = GetBeat(on.tick);
+    double off_beat = GetBeat(off.tick);
+
+    // 处理跨和弦
+    int on_chord_seq = m_chord_progression->GetChordSeq(on_beat, 0);
+    int off_chord_seq = m_chord_progression->GetChordSeq(off_beat, 1);
+    if (on_chord_seq != off_chord_seq)
+    {
+        auto chord_tuple = m_chord_progression->GetChord(on_chord_seq);
+        int end_tick = (std::get<1>(chord_tuple) + std::get<1>(chord_tuple) - 1) * m_midifile->getTicksPerQuarterNote();
+        off.tick = end_tick;
+    }
+    // 处理跨小节
+    // TODO: payne
 }
 
 } // end namespace smf

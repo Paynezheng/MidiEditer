@@ -1,3 +1,12 @@
+//
+// Programmer:    Payne Zheng <photosynthesi@outlook.com>
+// Creation Date: Fri Dec 31 03:34:58 UTC 2021
+// Last Modified: Thu Jan  6 07:17:45 UTC 2022
+// Filename:      midiediter/include/ChordProgression.cpp
+// Syntax:        C++11
+// Code           UTF-8
+//
+
 #include "ChordProgression.h"
 #include <vector>
 
@@ -104,6 +113,13 @@ bool ChordProgression::IsChordInterior(int beat, int key) {
     return false;
 }
 
+/**
+ * @brief 根据拍数&音名, 判断是否为和弦内音. 提供一个更细粒度的查询
+ * @param beat 第几拍
+ * @param key 音名
+ * @return true 
+ * @return false 
+ */
 bool ChordProgression::IsChordInterior(double beat, int key) {
     double pos = beat;
     while(pos > m_beats) {
@@ -120,6 +136,56 @@ bool ChordProgression::IsChordInterior(double beat, int key) {
         }
     }
     return false;
+}
+
+/**
+ * @brief 获取当前和弦的序号，和弦的序号从1开始，并一次递增
+ * @param beat 当前事件 第几拍
+ * @param event_type 判断on/off属于哪个和弦时, 切换和弦的节点上on属于下一个和弦, off属于上一个和弦; midi开始节点(0时刻), 两种事件都属于第一个和弦. on->0|off->1 
+ * @return int 
+ */
+int	ChordProgression::GetChordSeq(double beat, int event_type) {
+    if (beat == 0) return 1;
+    double  pos = beat;
+    int     seq = 1;        // 用于表示和弦序号 .
+    int     chord_num = m_chords.size();
+    while(pos > m_beats) {
+        pos -= m_beats;
+        seq += chord_num;
+    }
+    double chord_begin_beat = 0;
+    for (auto iter: m_chords) {
+        if(chord_begin_beat + std::get<1>(iter.second) > pos) {
+            return seq;
+        }
+        else if (chord_begin_beat + std::get<1>(iter.second) == pos)
+        {
+            return event_type == 0 ? (seq+1) : seq;
+        }
+        else {
+            chord_begin_beat += std::get<1>(iter.second);
+            seq += 1;
+        }
+    }
+    return seq;
+}
+
+/**
+ * @brief Get the Chord object
+ * @param seq 
+ * @return std::tuple<Chord, int, int> Chord, 和弦起始拍, 和弦长度
+ */
+std::tuple<Chord, int, int>	ChordProgression::GetChord(int seq) {
+    int chord_num   = m_chords.size();
+    int end_beat    = 0;
+    int chord_len   = std::get<1>(m_chords[chord_num]);
+    end_beat += m_beats * seq/chord_num;
+    int i;
+    for (i=1; i<=seq%chord_num; i++) {
+        chord_len = std::get<1>(m_chords[i]);
+        end_beat += chord_len;
+    }
+    return std::make_tuple(std::get<0>(m_chords[i-1]), end_beat-chord_len+1, chord_len);
 }
 
 } // end namespace smf

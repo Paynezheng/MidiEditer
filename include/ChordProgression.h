@@ -60,6 +60,7 @@ enum ENotes {
 };
 
 enum EChordName {
+	EN_CHORD_NAME__EMPTY				= 0, // 空
 	EN_CHORD_NAME__MAJOR				= 1, // 大三和弦
 	EN_CHORD_NAME__MINOR				= 2, // 小三
 	EN_CHORD_NAME__SUS4					= 3, // sus4	
@@ -77,6 +78,7 @@ enum EChordName {
 
 class Chord {
 public:
+	Chord();
 	Chord(int chord_base, int chord_name);
 	bool 		IsChordInterior(int key);
 
@@ -96,7 +98,9 @@ public:
 	void 		Init(std::vector<std::tuple<int, int, int>>& chords);				// TODO:index-><chord_enum, chord_base, chord_duration>
 	void 		Reset();
 	bool		IsChordInterior(int beat, int key);
-	bool		IsChordInterior(double beat, int key);			// 提供一个更细粒度的查询
+	bool		IsChordInterior(double beat, int key);
+	int			GetChordSeq(double beat, int event_type);
+	std::tuple<Chord, int, int>	GetChord(int seq);
 // private:
 	std::map<int, std::tuple<Chord, int>>		m_chords;		// 序号-><和弦, beats> 
 	int			m_beats;	// 一共有几拍
