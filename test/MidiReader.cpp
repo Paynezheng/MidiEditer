@@ -30,13 +30,15 @@ int main(int argc, char** argv) {
    if (tracks > 1) cout << "TRACKS: " << tracks << endl;
    for (int track=0; track<tracks; track++) {
       if (tracks > 1) cout << "\nTrack " << track << endl;
-      cout << "Tick\tSeconds\tDur\tMessage" << endl;
+      cout << "Tick\tSeconds\tDur\tSeq\tMessage" << endl;
       for (int event=0; event<midifile[track].size(); event++) {
          cout << dec << midifile[track][event].tick;
          cout << '\t' << dec << midifile[track][event].seconds;
          cout << '\t';
          if (midifile[track][event].isNoteOn())
             cout << midifile[track][event].getDurationInSeconds();
+         cout << '\t';
+         cout<< midifile[track][event].seq;
          cout << '\t' << hex;
          for (auto i=0; i<midifile[track][event].size(); i++)
             cout << (int)midifile[track][event][i] << ' ';

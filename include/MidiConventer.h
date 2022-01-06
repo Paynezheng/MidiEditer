@@ -29,7 +29,7 @@ public:
 	void 		PrintMidifile();
 
 private:
-	void 		QuantifyEvent(MidiEvent& midievent, int unit_size, int direction);
+	double 		QuantifyEvent(MidiEvent& midievent, int unit_size, int direction);
 	void		CuttingNote(MidiEvent& on, MidiEvent& off);
 	bool		IsChordInterior(const MidiEvent& midievent);
 	bool 		CheckNoteValid(const MidiEvent& on, const MidiEvent& off);

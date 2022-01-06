@@ -40,6 +40,7 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
         if (midi_events[event].isNoteOn()) {
             QuantifyEvent(midi_events[event], 16, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
+            // TODO: 移动on也要移动off，保持音长不变
             // QuantifyEvent(*offevent, 16, 0);
             CuttingNote(midi_events[event], *offevent);
         }
@@ -53,8 +54,9 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
  * @param midievent 
  * @param unit_size 量化单位, 2,4,8等分别表示二/四/十六分
  * @param direction 量化方向,-1向左移动,默认移动到最近节点
+ * @return 100 000 000: 错误 | 其余表示向左(负数)/右(正数)的位移量(单位: tick)
  */
-void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) {
+double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) {
     int tpq = m_midifile->getTicksPerQuarterNote();
     // TODO： 将事件移动到最近的节点上
     std::cout<< std::dec << GetBeat(midievent.tick);
@@ -74,12 +76,13 @@ void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direc
             right_beat = left_beat + 0.25;
             break;
         default:
-            return;
+            return 100000000;
     }
+    int tmp = midievent.tick;
     // 向左移
     if (direction == -1) {
         midievent.tick = int((left_beat - 4.0 / unit_size)*tpq);
-        return;
+        return midievent.tick - tmp;
     }
     else if(direction == 1) {
         // TODO:
@@ -91,6 +94,7 @@ void MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direc
     else
         midievent.tick = left_tick;
     std::cout<< '\t' << GetBeat(midievent.tick) << std::endl;
+    return midievent.tick - tmp;
 }
 
 bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
@@ -114,26 +118,32 @@ void MidiConventer::CleanChordVoiceover(int track) {
     m_midifile->removeEmpties();
     // m_midifile->sortTracks();
 }
-
+/**
+ * @brief 当前逻辑: 遍历音符点,先遍历的音符点保留，后遍历的音符与先遍历的有重叠的则删除之
+ * MidiEventList::eventcompare 保证了MidiEventList的时间序
+ * TODO: 优先保留高音(需求不完善)
+ * @param track 
+ */
 void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     std::set<int> recur_notes;      // 按序号删除
 
+    // 当前遍历到音符时再赋值 // event的seq是唯一的
     int on_tick = -1;
     int off_tick = -1;
+    int on_seq  = -1;
+    int off_seq = -1;
+
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
-            if (on_tick == -1) {
+            if (midi_events[event].tick >= off_tick) {
+                // 包括了当前音符已经在前一音符后面和没有当前音符两种情况
                 on_tick = midi_events[event].tick;
+                on_seq = midi_events[event].seq;
                 MidiEvent* offevent = midi_events[event].getLinkedEvent();
                 off_tick = offevent->tick;
-                continue;
-            }
-            else if (midi_events[event].tick > off_tick) {
-                on_tick = midi_events[event].tick;
-                MidiEvent* offevent = midi_events[event].getLinkedEvent();
-                off_tick = offevent->tick;
+                off_seq = offevent->seq;
             }
             else {
                 recur_notes.insert(event);
@@ -141,18 +151,20 @@ void MidiConventer::CleanRecurNotes(int track) {
         }
         else if(midi_events[event].isNoteOff())
         {
-
-        }
-        // MidiEventList::eventcompare 保证了MidiEventList的时间序
-        // 读on事件后，off事件出现前所有的onnote都删除
-        if (midi_events[event].isNote()) {
-            if (event-1 >= 0 && midi_events[event-1].isNote() && 
-                midi_events[event-1].tick == midi_events[event].tick) {
-                MidiEvent* offevent = midi_events[event].getLinkedEvent();
-                midi_events[event].clear();
-                if (offevent != nullptr) 
-                    offevent->clear();
+            if (midi_events[event].tick == off_tick && midi_events[event].seq == off_seq) {
+                on_tick = -1;
+                on_seq = -1;
+                off_tick = -1;
+                off_seq = -1;
             }
+            else {
+                recur_notes.insert(event);
+            }
+        }
+    }
+    for (int event=0; event< midi_events.size(); event++) {
+        if (recur_notes.find(event) != recur_notes.end()) {
+            midi_events[event].clear();
         }
     }
     m_midifile->removeEmpties();
