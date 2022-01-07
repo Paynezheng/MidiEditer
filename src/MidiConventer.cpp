@@ -58,7 +58,6 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
  */
 double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) {
     int tpq = m_midifile->getTicksPerQuarterNote();
-    // TODO： 将事件移动到最近的节点上
     std::cout<< std::dec << GetBeat(midievent.tick);
     double left_beat = 0;
     double right_beat = 0;
