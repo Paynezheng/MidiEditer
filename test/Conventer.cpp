@@ -48,9 +48,10 @@ int main(int argc, char** argv) {
     for (int track = 0; track < tracks; track++) {
         midi_conventer->QuantifyTrack(track, 1);
         midi_conventer->CleanChordVoiceover(track);
-        // midi_conventer->CleanRecurNotes(track);
-        input_user->sortTracks();
+        midi_conventer->CleanRecurNotes(track);
+        midi_conventer->ProlongNotes(track);
     }
+    input_user->sortTracks();
     input_user->write(argv[1]);
 
 }

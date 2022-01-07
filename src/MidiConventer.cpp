@@ -120,7 +120,7 @@ void MidiConventer::CleanChordVoiceover(int track) {
 /**
  * @brief 当前逻辑: 遍历音符点,先遍历的音符点保留，后遍历的音符与先遍历的有重叠的则删除之
  * MidiEventList::eventcompare 保证了MidiEventList的时间序
- * TODO: 优先保留高音(需求不完善)
+ * TODO: 优先保留高音(需求不不理解，方案不会写)
  * @param track 
  */
 void MidiConventer::CleanRecurNotes(int track) {
@@ -168,21 +168,25 @@ void MidiConventer::CleanRecurNotes(int track) {
     }
     m_midifile->removeEmpties();
 }
-	
+
+/**
+ * @brief 延音功能
+ * 
+ * @param track 
+ */
 void MidiConventer::ProlongNotes(int track) {
     std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
     std::cout << "\nQuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOn()) {
-            MidiEvent* offevent = midi_events[event].getLinkedEvent();      // 应该这个就是这个音的结束事件...
-            if (offevent != nullptr) {
-                double tar_beat = (int)(GetBeat(midi_events[event].tick)/0.5) * 0.5;
+        if (midi_events[event].isNoteOff()) {
+            if (event+1 < midi_events.size() && midi_events[event+1].isNoteOn())
+            {
+                midi_events[event].tick = midi_events[event+1].tick;
             }
-            // set off event tick
         }
     }
-    m_midifile->removeEmpties();
+    // m_midifile->removeEmpties();
 }
 
 void MidiConventer::PrintMidifile() {

@@ -39,8 +39,15 @@ int main(int argc, char** argv) {
     int chord_tracks = chord->getTrackCount();
     int user_tracks = input_user->getTrackCount();
 
+    input_user->addTracks(chord_tracks);
     for (int track = 0; track < chord_tracks; track++) {
-        // midi_conventer->CleanRecurNotes(track);
+        MidiEventList& event_list = (*chord)[track];
+        for (int i=0; i<event_list.size(); i++) {
+            if (event_list[i].isNoteOn())
+                input_user->addNoteOn(track + user_tracks, event_list[i].tick, event_list[i].getChannel(), event_list[i].getKeyNumber(), event_list[i].getVelocity());
+            else if (event_list[i].isNoteOff())
+                input_user->addNoteOff(track + user_tracks, event_list[i].tick, event_list[i].getChannel(), event_list[i].getKeyNumber());
+        }
     }
     input_user->sortTracks();
     input_user->write(argv[2]);
