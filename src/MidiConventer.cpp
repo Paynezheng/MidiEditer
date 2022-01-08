@@ -42,10 +42,12 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
             // TODO: 移动on也要移动off，保持音长不变
             // QuantifyEvent(*offevent, 8, 0);
-            CuttingNote(midi_events[event], *offevent);
+            if(offevent != nullptr) {
+                CuttingNote(midi_events[event], *offevent);
+            }
         }
     }
-    // m_midifile->sortTracks();
+    m_midifile->sortTrack(track);
 }
 
 /**
@@ -115,7 +117,7 @@ void MidiConventer::CleanChordVoiceover(int track) {
         }
     }
     m_midifile->removeEmpties();
-    // m_midifile->sortTracks();
+    m_midifile->sortTrack(track);
 }
 /**
  * @brief 当前逻辑: 遍历音符点,先遍历的音符点保留，后遍历的音符与先遍历的有重叠的则删除之
@@ -141,8 +143,10 @@ void MidiConventer::CleanRecurNotes(int track) {
                 on_tick = midi_events[event].tick;
                 on_seq = midi_events[event].seq;
                 MidiEvent* offevent = midi_events[event].getLinkedEvent();
-                off_tick = offevent->tick;
-                off_seq = offevent->seq;
+                if (offevent != nullptr) {
+                    off_tick = offevent->tick;
+                    off_seq = offevent->seq;
+                }
             }
             else {
                 recur_notes.insert(event);
@@ -167,6 +171,7 @@ void MidiConventer::CleanRecurNotes(int track) {
         }
     }
     m_midifile->removeEmpties();
+    m_midifile->sortTrack(track);
 }
 
 /**
@@ -176,7 +181,7 @@ void MidiConventer::CleanRecurNotes(int track) {
  */
 void MidiConventer::ProlongNotes(int track) {
     std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
-    std::cout << "\nQuantifyTrack " << track << std::endl;
+    std::cout << "QuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOff()) {
@@ -186,6 +191,7 @@ void MidiConventer::ProlongNotes(int track) {
             }
         }
     }
+    m_midifile->sortTrack(track);
     // m_midifile->removeEmpties();
 }
 
@@ -250,20 +256,28 @@ bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) {
  * @param off 
  */
 void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off) {
+    std::cout<< "Cutting Note begin" << std::endl; 
     double on_beat = GetBeat(on.tick);
     double off_beat = GetBeat(off.tick);
 
     // 处理跨和弦
+    std::cout<< "Cutting -1" << std::endl; 
     int on_chord_seq = m_chord_progression->GetChordSeq(on_beat, 0);
+    std::cout<< "Cutting 0" << std::endl; 
     int off_chord_seq = m_chord_progression->GetChordSeq(off_beat, 1);
     if (on_chord_seq != off_chord_seq)
     {
+        std::cout<< "Cutting 1" << std::endl; 
         auto chord_tuple = m_chord_progression->GetChord(on_chord_seq);
-        int end_tick = (std::get<1>(chord_tuple) + std::get<1>(chord_tuple) - 1) * m_midifile->getTicksPerQuarterNote();
+        std::cout<< "Cutting 2" << std::endl; 
+        int end_tick = (std::get<1>(chord_tuple) + std::get<2>(chord_tuple) - 1) * m_midifile->getTicksPerQuarterNote();
+        std::cout<< "Cutting 3" << std::endl; 
         off.tick = end_tick;
+        std::cout<< "Cutting 1" << std::endl; 
     }
     // 处理跨小节
     // TODO: payne
+    std::cout<< "Cutting Note end" << std::endl; 
 }
 
 } // end namespace smf
