@@ -48,9 +48,20 @@ int main(int argc, char** argv) {
     for (int track = 0; track < tracks; track++) {
         midi_conventer->QuantifyTrack(track, 1);
         midi_conventer->CleanChordVoiceover(track);
+            cout<< "1" <<endl;
+            input_user->doTimeAnalysis();
+            cout<< "2" <<endl;
+            input_user->linkNotePairs();
+            cout<< "3" <<endl;
         midi_conventer->CleanRecurNotes(track);
+            cout<< "4" <<endl;
+            input_user->doTimeAnalysis();
+            cout<< "5" <<endl;
+            input_user->linkNotePairs();
+            cout<< "6" <<endl;
         midi_conventer->ProlongNotes(track);
     }
+
     input_user->sortTracks();
     input_user->write(argv[1]);
 

@@ -138,18 +138,27 @@ void MidiConventer::CleanRecurNotes(int track) {
 
     for (int event=0; event< midi_events.size(); event++) {
         if (midi_events[event].isNoteOn()) {
+            MidiEvent* offevent = midi_events[event].getLinkedEvent();
             if (midi_events[event].tick >= off_tick) {
                 // 包括了当前音符已经在前一音符后面和没有当前音符两种情况
                 on_tick = midi_events[event].tick;
                 on_seq = midi_events[event].seq;
-                MidiEvent* offevent = midi_events[event].getLinkedEvent();
                 if (offevent != nullptr) {
                     off_tick = offevent->tick;
                     off_seq = offevent->seq;
                 }
+                else {
+                    std::cout<< midi_events[event].seq << std::endl;
+                }
             }
             else {
-                recur_notes.insert(event);
+                recur_notes.insert(midi_events[event].seq);
+                if (offevent != nullptr) {
+                    recur_notes.insert(offevent->seq);
+                }
+                else {
+                    std::cout<< midi_events[event].seq << std::endl;
+                }
             }
         }
         else if(midi_events[event].isNoteOff())
@@ -161,12 +170,16 @@ void MidiConventer::CleanRecurNotes(int track) {
                 off_seq = -1;
             }
             else {
-                recur_notes.insert(event);
+                recur_notes.insert(midi_events[event].seq);
             }
         }
     }
     for (int event=0; event< midi_events.size(); event++) {
-        if (recur_notes.find(event) != recur_notes.end()) {
+        if (midi_events[event].isNoteOn() && midi_events[event].getDurationInSeconds() == 0) {
+            midi_events[event].clear();
+            continue;
+        }
+        if (recur_notes.find(midi_events[event].seq) != recur_notes.end()) {
             midi_events[event].clear();
         }
     }
@@ -223,6 +236,8 @@ void MidiConventer::PrintMidifile() {
     }
 }
 
+// void MidiConventer::PrintEvent(MidiEvent midi_event) {}
+
 bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) {
     double on_beat = GetBeat(on.tick);
     double off_beat = GetBeat(off.tick);
@@ -261,19 +276,13 @@ void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off) {
     double off_beat = GetBeat(off.tick);
 
     // 处理跨和弦
-    std::cout<< "Cutting -1" << std::endl; 
     int on_chord_seq = m_chord_progression->GetChordSeq(on_beat, 0);
-    std::cout<< "Cutting 0" << std::endl; 
     int off_chord_seq = m_chord_progression->GetChordSeq(off_beat, 1);
     if (on_chord_seq != off_chord_seq)
     {
-        std::cout<< "Cutting 1" << std::endl; 
         auto chord_tuple = m_chord_progression->GetChord(on_chord_seq);
-        std::cout<< "Cutting 2" << std::endl; 
         int end_tick = (std::get<1>(chord_tuple) + std::get<2>(chord_tuple) - 1) * m_midifile->getTicksPerQuarterNote();
-        std::cout<< "Cutting 3" << std::endl; 
         off.tick = end_tick;
-        std::cout<< "Cutting 1" << std::endl; 
     }
     // 处理跨小节
     // TODO: payne

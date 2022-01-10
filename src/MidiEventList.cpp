@@ -543,10 +543,10 @@ void MidiEventList::sort(void) {
 // eventcompare -- Event comparison function for sorting tracks.
 //
 // Sorting rules:
-//    (1) sort by (absolute) tick value; otherwise, if tick values are the same:
-//    (2) end-of-track meta message is always last.
-//    (3) other meta-messages come before regular MIDI messages.
-//    (4) note-offs come after all other regular MIDI messages except note-ons.
+//    (1) sort by (absolute) tick value; otherwise, if tick values are the same:		// 1. 根据tick排序
+//    (2) end-of-track meta message is always last.										// 2. 表示midi结束的event永远在最后面
+//    (3) other meta-messages come before regular MIDI messages.						// 3. 其他的原始信息都在常规midi信息前面
+//    (4) note-offs come after all other regular MIDI messages except note-ons.			// 4&5 保持on/off有序
 //    (5) note-ons come after all other regular MIDI messages.
 //
 
