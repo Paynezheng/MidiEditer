@@ -32,7 +32,9 @@ enum EChordProgressions {
 	EN_CHORD_PROGRESSIONS_TYPE__C_BLUES						= 0,			// 12小节蓝调
 	EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7 				= 1,			// 1625
 	EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5			= 2,			// 
-	END														= 3 		
+	EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G					= 3,
+	EN_CHORD_PROGRESSIONS_TYPE__Am_G_F9_F9					= 4,
+	END														= 5 		
 };
 
 enum ENotes {
@@ -69,8 +71,11 @@ enum EChordName {
 	// SEVENTH CHORD
 	EN_CHORD_NAME__MAJOR_SEVENTH		= 100, // 大七
 	EN_CHORD_NAME__MINOR_SEVENTH		= 101, // 小七
-	EN_CHORD_NAME__DOMINANT_SEVENTH		= 102, // dominant_seventh
+	EN_CHORD_NAME__DOMINANT_SEVENTH		= 102, // 属七
 	EN_CHORD_NAME__SUS4_SEVENTH			= 103,  // sus4_minor_7
+
+	// NINTH CHORD
+	EN_CHORD_NAME__DOMINANT_NINTH		= 200, // 属九和弦
 
 	EN_CHORD_NAME__END					= 104
 };

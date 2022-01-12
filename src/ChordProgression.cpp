@@ -53,6 +53,12 @@ Chord::Chord(int chord_base, int chord_name):m_chord_base(chord_base), m_chord_n
             m_notes.push_back((chord_interior_base + 5) % 12);
             m_notes.push_back((chord_interior_base + 7) % 12);
             m_notes.push_back((chord_interior_base + 11) % 12);
+        case EN_CHORD_NAME__DOMINANT_NINTH:
+            m_notes.push_back(chord_interior_base);
+            m_notes.push_back((chord_interior_base + 4) % 12);
+            m_notes.push_back((chord_interior_base + 7) % 12);
+            m_notes.push_back((chord_interior_base + 10) % 12);
+            m_notes.push_back((chord_interior_base + 14) % 12);
         default:
             return;
     }
@@ -84,10 +90,21 @@ ChordProgression::ChordProgression(int chord_progression_id) {
             m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__SUS4), 2));
             m_chords.emplace(5, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__MAJOR), 2));
             m_beats = 16;
+        case EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G:
+            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__C, EN_CHORD_NAME__MAJOR), 4));
+            m_chords.emplace(2, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__MAJOR), 4));
+            m_chords.emplace(3, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR), 4));
+            m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__MAJOR), 4));
+            m_beats = 16;
+        case EN_CHORD_PROGRESSIONS_TYPE__Am_G_F9_F9:
+            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR), 4));
+            m_chords.emplace(2, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__MAJOR), 4));
+            m_chords.emplace(3, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__DOMINANT_NINTH), 4));
+            m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__DOMINANT_NINTH), 4));
+            m_beats = 16;
         default:
             return;
     }
-
 }
 
 void ChordProgression::Init(std::vector<std::tuple<int, int, int>>& chords) {

@@ -41,28 +41,28 @@ int main(int argc, char** argv) {
     int tracks = input_user->getTrackCount();
     MidiConventer* midi_conventer;
     if (param_chord_progression == 1625 || param_chord_progression == 1) {
-        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7);    // 1625
-        midi_conventer = new MidiConventer(input_user, chord_progression, 16);
+        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);    // 1625
+        midi_conventer = new MidiConventer(input_user, chord_progression, 8);
     }
     else {
-        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5);
-        midi_conventer = new MidiConventer(input_user, chord_progression, 8);
+        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Am_G_F9_F9);
+        midi_conventer = new MidiConventer(input_user, chord_progression, 16);
     }
 
     for (int track = 0; track < tracks; track++) {
-        midi_conventer->QuantifyTrack(track, 1);
+        midi_conventer->QuantifyTrack(track);
         midi_conventer->CleanChordVoiceover(track);
-            cout<< "1" <<endl;
+            // cout<< "1" <<endl;
             input_user->doTimeAnalysis();
-            cout<< "2" <<endl;
+            // cout<< "2" <<endl;
             input_user->linkNotePairs();
-            cout<< "3" <<endl;
+            // cout<< "3" <<endl;
         midi_conventer->CleanRecurNotes(track);
-            cout<< "4" <<endl;
+            // cout<< "4" <<endl;
             input_user->doTimeAnalysis();
-            cout<< "5" <<endl;
+            // cout<< "5" <<endl;
             input_user->linkNotePairs();
-            cout<< "6" <<endl;
+            // cout<< "6" <<endl;
         midi_conventer->ProlongNotes(track);
     }
 

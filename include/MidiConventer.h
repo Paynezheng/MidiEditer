@@ -22,7 +22,7 @@ public:
 	void		Reset();
 	bool		Convent(int track, int bpm, int chords);
 
-	void		QuantifyTrack(int track, int duration);
+	void		QuantifyTrack(int track);
 	void		CleanChordVoiceover(int track);
 	void		CleanRecurNotes(int track);
 	void		ProlongNotes(int track);

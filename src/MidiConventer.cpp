@@ -29,7 +29,7 @@ double MidiConventer::GetBeat(int tick) {
     return double(tick)/m_midifile->getTicksPerQuarterNote();
 }
 
-void MidiConventer::QuantifyTrack(int track, int duration) {
+void MidiConventer::QuantifyTrack(int track) {
     std::cout << "\nQuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     std::cout<<std::endl;
@@ -128,6 +128,64 @@ void MidiConventer::CleanChordVoiceover(int track) {
 void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
+    // std::set<int> recur_notes;      // 按序号删除
+
+    // 当前遍历到音符时再赋值 // event的seq是唯一的
+    int on_tick = -1, off_tick = -1;
+    int on_index = -1, off_index = -1;
+
+    MidiEvent* offevent = nullptr;
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            if (on_tick == -1) {
+                offevent = midi_events[event].getLinkedEvent();
+                if (offevent != nullptr) {
+                    on_tick = midi_events[event].tick;
+                    off_tick = offevent->tick;
+                }
+                else {
+                    std::cout<< "off_event nullptr" << midi_events[event].seq << std::endl;
+                }
+            }
+            else {
+                if (offevent != nullptr && offevent->tick > midi_events[event].tick) {
+                    offevent->tick = midi_events[event].tick;
+                }
+                offevent = midi_events[event].getLinkedEvent();
+                if (offevent != nullptr) {
+                    on_tick = midi_events[event].tick;
+                    off_tick = offevent->tick;
+                }
+                else {
+                    std::cout<< "off_event nullptr" << midi_events[event].seq << std::endl;
+                }
+            }
+        }
+        else if(midi_events[event].isNoteOff())
+        {
+            if (midi_events[event].tick == off_tick) {
+                on_tick = -1;
+                off_tick = -1;
+                offevent = nullptr;
+            }
+        }
+    }
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNote() && midi_events[event].getTickDuration() == 0) {
+            midi_events[event].clear();
+            continue;
+        }
+        // if (recur_notes.find(midi_events[event].seq) != recur_notes.end()) {
+        //     midi_events[event].clear();
+        // }
+    }
+    m_midifile->removeEmpties();
+    m_midifile->sortTrack(track);
+}
+/*
+void MidiConventer::CleanRecurNotes(int track) {
+    std::cout << "\nCleanRecurNotes Track " << track << std::endl;
+    MidiEventList& midi_events = (*m_midifile)[track];
     std::set<int> recur_notes;      // 按序号删除
 
     // 当前遍历到音符时再赋值 // event的seq是唯一的
@@ -175,7 +233,7 @@ void MidiConventer::CleanRecurNotes(int track) {
         }
     }
     for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOn() && midi_events[event].getDurationInSeconds() == 0) {
+        if (midi_events[event].isNoteOn() && midi_events[event].getTickDuration() == 0) {
             midi_events[event].clear();
             continue;
         }
@@ -186,6 +244,7 @@ void MidiConventer::CleanRecurNotes(int track) {
     m_midifile->removeEmpties();
     m_midifile->sortTrack(track);
 }
+*/
 
 /**
  * @brief 延音功能
