@@ -39,11 +39,15 @@ int main(int argc, char** argv) {
     int param_chord_progression = atoi(argv[2]); // 先默认一个1625
     ChordProgression* chord_progression;
     int tracks = input_user->getTrackCount();
-    if (param_chord_progression == 1625 || param_chord_progression == 1)
+    MidiConventer* midi_conventer;
+    if (param_chord_progression == 1625 || param_chord_progression == 1) {
         chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__CM7_Am7_Dm7_G7);    // 1625
-    else
+        midi_conventer = new MidiConventer(input_user, chord_progression, 16);
+    }
+    else {
         chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5);
-    MidiConventer* midi_conventer = new MidiConventer(input_user, chord_progression, 16);
+        midi_conventer = new MidiConventer(input_user, chord_progression, 8);
+    }
 
     for (int track = 0; track < tracks; track++) {
         midi_conventer->QuantifyTrack(track, 1);

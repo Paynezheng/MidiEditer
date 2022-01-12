@@ -38,10 +38,10 @@ void MidiConventer::QuantifyTrack(int track, int duration) {
         // 一个note不能越过小节线
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) {
-            QuantifyEvent(midi_events[event], 8, 0);
+            QuantifyEvent(midi_events[event], m_duration, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
             // TODO: 移动on也要移动off，保持音长不变
-            // QuantifyEvent(*offevent, 8, 0);
+            // QuantifyEvent(*offevent, m_duration, 0);
             if(offevent != nullptr) {
                 CuttingNote(midi_events[event], *offevent);
             }
