@@ -102,6 +102,12 @@ ChordProgression::ChordProgression(int chord_progression_id) {
             m_chords.emplace(3, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__DOMINANT_NINTH), 4));
             m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__DOMINANT_NINTH), 4));
             m_beats = 16;
+        case EN_CHORD_PROGRESSIONS_TYPE__Am_G_F_C:
+            m_chords.emplace(1, std::make_tuple(Chord(EN_NOTE__A, EN_CHORD_NAME__MINOR), 4));
+            m_chords.emplace(2, std::make_tuple(Chord(EN_NOTE__G, EN_CHORD_NAME__MAJOR), 4));
+            m_chords.emplace(3, std::make_tuple(Chord(EN_NOTE__F, EN_CHORD_NAME__MAJOR), 4));
+            m_chords.emplace(4, std::make_tuple(Chord(EN_NOTE__C, EN_CHORD_NAME__MAJOR), 4));
+            m_beats = 16;
         default:
             return;
     }

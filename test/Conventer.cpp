@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     {
         cout<< "--> param num error <--"<<endl;
         // cout<< "./Conventer input_midifile_chord input_midifile 1/2" <<endl;
-        cout<< "./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F9_F9)" <<endl;
+        cout<< "./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F_C)" <<endl;
         return -1;
     }
     // MidiFile* chord = new MidiFile(argv[1]);
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         midi_conventer = new MidiConventer(input_user, chord_progression, 8);
     }
     else {
-        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Am_G_F9_F9);
+        chord_progression = new ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Am_G_F_C);
         midi_conventer = new MidiConventer(input_user, chord_progression, 16);
     }
 

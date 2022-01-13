@@ -34,7 +34,8 @@ enum EChordProgressions {
 	EN_CHORD_PROGRESSIONS_TYPE__1_4M7_6m7_5sus4_5			= 2,			// 
 	EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G					= 3,
 	EN_CHORD_PROGRESSIONS_TYPE__Am_G_F9_F9					= 4,
-	END														= 5 		
+	EN_CHORD_PROGRESSIONS_TYPE__Am_G_F_C					= 5,
+	END														= 6 		
 };
 
 enum ENotes {
