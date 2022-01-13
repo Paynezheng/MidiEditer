@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     {
         cout<< "--> param num error <--"<<endl;
         // cout<< "./Conventer input_midifile_chord input_midifile 1/2" <<endl;
-        cout<< "./Conventer input_midifile 1(1625)/0(1465sus45)" <<endl;
+        cout<< "./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F9_F9)" <<endl;
         return -1;
     }
     // MidiFile* chord = new MidiFile(argv[1]);
