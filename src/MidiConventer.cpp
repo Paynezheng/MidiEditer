@@ -122,7 +122,7 @@ void MidiConventer::CleanChordVoiceover(int track) {
 /**
  * @brief 当前逻辑: 遍历音符点,先遍历的音符点保留，后遍历的音符与先遍历的有重叠的则删除之
  * MidiEventList::eventcompare 保证了MidiEventList的时间序
- * TODO: 优先保留高音(需求不不理解，方案不会写)
+ * TODO: 保留变化音
  * @param track 
  */
 void MidiConventer::CleanRecurNotes(int track) {
@@ -182,69 +182,6 @@ void MidiConventer::CleanRecurNotes(int track) {
     m_midifile->removeEmpties();
     m_midifile->sortTrack(track);
 }
-/*
-void MidiConventer::CleanRecurNotes(int track) {
-    std::cout << "\nCleanRecurNotes Track " << track << std::endl;
-    MidiEventList& midi_events = (*m_midifile)[track];
-    std::set<int> recur_notes;      // 按序号删除
-
-    // 当前遍历到音符时再赋值 // event的seq是唯一的
-    int on_tick = -1;
-    int off_tick = -1;
-    int on_seq  = -1;
-    int off_seq = -1;
-
-    for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOn()) {
-            MidiEvent* offevent = midi_events[event].getLinkedEvent();
-            if (midi_events[event].tick >= off_tick) {
-                // 包括了当前音符已经在前一音符后面和没有当前音符两种情况
-                on_tick = midi_events[event].tick;
-                on_seq = midi_events[event].seq;
-                if (offevent != nullptr) {
-                    off_tick = offevent->tick;
-                    off_seq = offevent->seq;
-                }
-                else {
-                    std::cout<< midi_events[event].seq << std::endl;
-                }
-            }
-            else {
-                recur_notes.insert(midi_events[event].seq);
-                if (offevent != nullptr) {
-                    recur_notes.insert(offevent->seq);
-                }
-                else {
-                    std::cout<< midi_events[event].seq << std::endl;
-                }
-            }
-        }
-        else if(midi_events[event].isNoteOff())
-        {
-            if (midi_events[event].tick == off_tick && midi_events[event].seq == off_seq) {
-                on_tick = -1;
-                on_seq = -1;
-                off_tick = -1;
-                off_seq = -1;
-            }
-            else {
-                recur_notes.insert(midi_events[event].seq);
-            }
-        }
-    }
-    for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOn() && midi_events[event].getTickDuration() == 0) {
-            midi_events[event].clear();
-            continue;
-        }
-        if (recur_notes.find(midi_events[event].seq) != recur_notes.end()) {
-            midi_events[event].clear();
-        }
-    }
-    m_midifile->removeEmpties();
-    m_midifile->sortTrack(track);
-}
-*/
 
 /**
  * @brief 延音功能
