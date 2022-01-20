@@ -15,12 +15,8 @@
 
 namespace smf {
 
-struct MidiNote{
-    MidiEvent   m_begin_event;
-    MidiEvent   m_end_event;
-    int         m_begin_tick;
-    int         m_end_tick;
-
+class MidiNote{
+public:
     MidiNote(): m_begin_tick(0), m_end_tick(0)
     {}
 
@@ -31,6 +27,21 @@ struct MidiNote{
         m_begin_tick    = begin_event.tick; 
         m_end_tick      = end_event.tick;
     }
+
+public:
+    const MidiEvent&  GetBeginEvent();
+    const MidiEvent&  GetEndEvent();
+    int         GetBeginTick();
+    int         GetEndTick();
+
+public:
+    static std::vector<MidiNote*> CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, int block_length);
+
+private:
+    MidiEvent   m_begin_event;
+    MidiEvent   m_end_event;
+    int         m_begin_tick;
+    int         m_end_tick;
 }
 
 } // end of namespace smf

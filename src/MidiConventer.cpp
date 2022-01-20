@@ -11,6 +11,8 @@
 #include "MidiNote.h"
 #include <stdlib.h>
 #include <iostream>
+#include <algorithm>
+#include <vector>
 #include <set>
 
 
@@ -127,64 +129,81 @@ void MidiConventer::CleanChordVoiceover(int track) {
  * @param track 
  */
 // TODO
-// void MidiConventer::CleanRecurNotes(int track) {
-//     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
-//     MidiEventList midi_events = (*m_midifile)[track];
-//     int block_tick = 4.0/m_duration*(m_midifile->getTicksPerQuarterNote());
-//     std::set<MidiNote*> notes;                              // [notes] 表示所以音
-//     std::map<int, std::vector<MidiNote*>> block_index;      // block_id -> [note]
-//     // 将所有的事件读到note中, 并保存每个区块包含哪些音
-//     for (int event=0; event< midi_events.size(); event++) {
-//         if (midi_events[event].isNoteOn()) {
-//             MidiEvent* offevent = midi_events[event].getLinkedEvent();
-//             if (offevent != nullptr && offevent->tick > midi_events[event].tick) {
-//                 MidiNote* new_note = new MidiNote(midi_events[event], (*offevent));
-//                 notes.insert(new_note);
-//                 int begin_tick  = new_note->m_begin_tick;
-//                 int end_tick    = new_note->m_end_tick;
-//                 while(begin_tick < end_tick) {
-//                     int block_id = begin_tick/block_tick;
-//                     begin_tick += block_tick;
-//                     block_index[block_id].push_back(new_note);
-//                 } 
-//             }
-//             else {
-//                 std::cout<< "MidiConventer::CleanRecurNotes off_event nullptr, MidiEvent seq:" << midi_events[event].seq << std::endl;
-//             }
-//         }
-//     }
+void MidiConventer::CleanRecurNotes(int track) {
+    std::cout << "\nCleanRecurNotes Track " << track << std::endl;
+    MidiEventList midi_events = (*m_midifile)[track];
+    int block_tick = 4.0/m_duration*(m_midifile->getTicksPerQuarterNote());
+    std::set<MidiNote*> notes;                              // [notes] 表示所以音
+    std::map<int, std::vector<MidiNote*>> block_index;      // block_id -> [note], block_id: 0 -- n-1
+    // 将所有的事件读到note中, 并保存每个区块包含哪些音
+    for (int event=0; event< midi_events.size(); event++) {
+        if (midi_events[event].isNoteOn()) {
+            MidiEvent* offevent = midi_events[event].getLinkedEvent();
+            if (offevent != nullptr && offevent->tick > midi_events[event].tick) {
+                MidiNote* new_note = new MidiNote(midi_events[event], (*offevent));
+                notes.insert(new_note);
+                int begin_tick  = new_note->GetBeginTick();
+                int end_tick    = new_note->GetEndTick();
+                while(begin_tick < end_tick) {
+                    int block_id = begin_tick/block_tick;
+                    begin_tick += block_tick;
+                    block_index[block_id].push_back(new_note);
+                } 
+            }
+            else {
+                std::cout<< "MidiConventer::CleanRecurNotes off_event nullptr, MidiEvent seq:" << midi_events[event].seq << std::endl;
+            }
+        }
+    }
 
-//     // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
-//     MidiNote* last_note = nullptr;
-//     int last_block_id = -1;
-//     for (auto iter : block_index) {
-//         if (iter.second.size() > 1) {
-//             // TODO: 随机索引
-//             for (int i = 0; i<iter.second.size(); i++) {
-//                 // FIXME: 还需要判断last_note是不是来自上一个block
-//                 if (last_note == nullptr || iter.second[i] != last_note) {
-//                     /**
-//                      * @brief TODO: 删除block_index中其他音
-//                      * last_note = 当前音
-//                      * break;
-//                      */
-//                 }
-//             }
-//         }
-//     }
-//     for (auto note : notes) {
+    // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
+    MidiNote* last_note = nullptr;
+    int last_block_id = -1;
+    for (auto iter : block_index) {
+        if (iter.second.size() > 1) {
+            // 当上一小节有音出现
+            if (last_note != nullptr && last_block_id == iter.first-1)
+            {   
+                auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
+                if (the_same_note != iter.second.end())
+                {
+                    iter.second.erase(the_same_note);
+                }
+            }
+            // 随机保留一个音,其他的音全部删除
+            int save_note_index = rand() % iter.second.size();
+            MidiNote* tmp = iter.second[save_note_index];
+            iter.second.clear();
+            iter.second.push_back(tmp);
+            // 临时变量表示此block使用的音和block_id
+            last_note = tmp;
+            last_block_id = iter.first;
+        }
+        else if (iter.second.size() == 1)
+        {
+            MidiNote* tmp = iter.second[0];
+            last_note = tmp;
+            last_block_id = iter.first;
+        }
+        else
+        {
+            last_note = nullptr;
+            last_block_id = iter.first;
+        }
+    }
+    for (auto note : notes) {
+         /**
+          * @brief  遍历note所在的几个block，
+          *         根据block_index note在那几个小节是有效的
+          *         裁剪note
+          */
+    }
+    // 写回midifile
+    m_midifile->clear();
 
-//          /**
-//           * @brief  遍历note所在的几个block，
-//           *         根据block_index note在那几个小节是有效的
-//           *         裁剪note
-//           */
-//     }
-//     // 写回midifile
-//     m_midifile->clear();
+}
 
-// }
-
+/*
 void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
@@ -242,6 +261,9 @@ void MidiConventer::CleanRecurNotes(int track) {
     m_midifile->removeEmpties();
     m_midifile->sortTrack(track);
 }
+
+*/
+
 
 /**
  * @brief 延音功能
