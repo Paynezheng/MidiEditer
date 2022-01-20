@@ -191,7 +191,14 @@ void MidiConventer::CleanRecurNotes(int track) {
             last_block_id = iter.first;
         }
     }
+    std::vector<MidiNote*>  tmp_notes;
+    std::set<MidiNote*>     new_notes;
     for (auto note : notes) {
+        tmp_notes.clear();
+        // CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length);
+        for(auto it:tmp_notes) {
+            new_notes.insert(it);
+        }
          /**
           * @brief  遍历note所在的几个block，
           *         根据block_index note在那几个小节是有效的

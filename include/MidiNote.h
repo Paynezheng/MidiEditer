@@ -35,7 +35,7 @@ public:
     int         GetEndTick();
 
 public:
-    static std::vector<MidiNote*> CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, int block_length);
+    static void CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length);
 
 private:
     MidiEvent   m_begin_event;
