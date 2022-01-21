@@ -229,13 +229,14 @@ void MidiConventer::CleanRecurNotes(int track)
     }
     // 写回midifile
     (*m_midifile)[track].clear();
+    m_midifile->addTrack();
     for (auto iter : new_notes)
     {   
-        m_midifile->addEvent(track, iter->GetBeginEvent());
-        m_midifile->addEvent(track, iter->GetEndEvent());
+        m_midifile->addEvent(m_midifile->getNumTracks() -1, iter->GetBeginEvent());
+        m_midifile->addEvent(m_midifile->getNumTracks() -1, iter->GetEndEvent());
     }
     m_midifile->doTimeAnalysis();
-    m_midifile->sortTrack(track);
+    m_midifile->sortTrack(m_midifile->getNumTracks() -1);
 }
 
 /*
