@@ -49,13 +49,14 @@ void MidiConventer::QuantifyTrack(int track)
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) 
         {
-            QuantifyEvent(midi_events[event], m_duration, 0);
+            double move = QuantifyEvent(midi_events[event], m_duration, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
-            // TODO: 移动on也要移动off，保持音长不变
+            // 移动on也要移动off，保持音长不变
             // QuantifyEvent(*offevent, m_duration, 0);
             if(offevent != nullptr) 
             {
-                CuttingNote(midi_events[event], *offevent);
+                offevent->tick = offevent->tick + move;
+                // CuttingNote(midi_events[event], *offevent);
             }
         }
     }
@@ -66,7 +67,7 @@ void MidiConventer::QuantifyTrack(int track)
  * @brief 量化一个on/off event, 每个事件会移动到最近的节点上, 所以有可能会导致跨小节跨和弦(丢失信息)的问题
  * 
  * @param midievent 
- * @param unit_size 量化单位, 2,4,8等分别表示二/四/十六分
+ * @param //unit_size 量化单位, 2,4,8等分别表示二/四/十六分 读取m_duration
  * @param direction 量化方向,-1向左移动,默认移动到最近节点
  * @return 100 000 000: 错误 | 其余表示向左(负数)/右(正数)的位移量(单位: tick)
  */
