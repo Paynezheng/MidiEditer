@@ -29,19 +29,20 @@ public:
     }
 
 public:
-    const MidiEvent&  GetBeginEvent();
-    const MidiEvent&  GetEndEvent();
+    MidiEvent&  GetBeginEvent();
+    MidiEvent&  GetEndEvent();
     int         GetBeginTick();
     int         GetEndTick();
 
 public:
     static void CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length);
+    static MidiNote* CutOneNote(MidiNote* origin_note, int begin_tick, int end_tick);
 
 private:
     MidiEvent   m_begin_event;
     MidiEvent   m_end_event;
     int         m_begin_tick;
     int         m_end_tick;
-}
+};
 
 } // end of namespace smf

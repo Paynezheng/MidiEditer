@@ -16,36 +16,45 @@
 #include <set>
 
 
-namespace smf {
+namespace smf 
+{
 
 MidiConventer::MidiConventer(MidiFile* midifile, ChordProgression* chord_progression, int duration)
-    :m_midifile(midifile), m_chord_progression(chord_progression), m_duration(duration) {
+    :m_midifile(midifile), m_chord_progression(chord_progression), m_duration(duration) 
+{
+
 }
 
-void MidiConventer::Reset() {
+void MidiConventer::Reset() 
+{
     m_midifile          = nullptr;
     m_duration          = 0;
     m_chord_progression = nullptr;
 }
 
-double MidiConventer::GetBeat(int tick) {
+double MidiConventer::GetBeat(int tick) 
+{
     return double(tick)/m_midifile->getTicksPerQuarterNote();
 }
 
-void MidiConventer::QuantifyTrack(int track) {
+void MidiConventer::QuantifyTrack(int track) 
+{
     std::cout << "\nQuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
     std::cout<<std::endl;
-    for (int event=0; event< midi_events.size(); event++) {
+    for (int event=0; event< midi_events.size(); event++) 
+    {
         // TODO: 需要移动两个事件(on && off)
         // 一个note不能越过小节线
         // 一个note不能跨和弦
-        if (midi_events[event].isNoteOn()) {
+        if (midi_events[event].isNoteOn()) 
+        {
             QuantifyEvent(midi_events[event], m_duration, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
             // TODO: 移动on也要移动off，保持音长不变
             // QuantifyEvent(*offevent, m_duration, 0);
-            if(offevent != nullptr) {
+            if(offevent != nullptr) 
+            {
                 CuttingNote(midi_events[event], *offevent);
             }
         }
@@ -61,12 +70,14 @@ void MidiConventer::QuantifyTrack(int track) {
  * @param direction 量化方向,-1向左移动,默认移动到最近节点
  * @return 100 000 000: 错误 | 其余表示向左(负数)/右(正数)的位移量(单位: tick)
  */
-double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) {
+double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) 
+{
     int tpq = m_midifile->getTicksPerQuarterNote();
     std::cout<< std::dec << GetBeat(midievent.tick);
     double left_beat = 0;
     double right_beat = 0;
-    switch(unit_size) {
+    switch(unit_size) 
+    {
         case 4:
             left_beat = (int)GetBeat(midievent.tick);
             right_beat = left_beat + 1;
@@ -84,11 +95,13 @@ double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int dir
     }
     int tmp = midievent.tick;
     // 向左移
-    if (direction == -1) {
+    if (direction == -1) 
+    {
         midievent.tick = int((left_beat - 4.0 / unit_size)*tpq);
         return midievent.tick - tmp;
     }
-    else if(direction == 1) {
+    else if(direction == 1) 
+    {
         // TODO:
     }
     int left_tick = int(left_beat*tpq);
@@ -106,12 +119,16 @@ bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
     return m_chord_progression->IsChordInterior((int)GetBeat(midievent.tick), midievent.getKeyNumber());
 }
 
-void MidiConventer::CleanChordVoiceover(int track) {
+void MidiConventer::CleanChordVoiceover(int track) 
+{
     std::cout << "\nCleanChordVoiceover Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
-    for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOn()) {
-            if (midi_events[event].isNote() && !IsChordInterior(midi_events[event])) {
+    for (int event=0; event< midi_events.size(); event++) 
+    {
+        if (midi_events[event].isNoteOn()) 
+        {
+            if (midi_events[event].isNote() && !IsChordInterior(midi_events[event])) 
+            {
                 MidiEvent* offevent = midi_events[event].getLinkedEvent();
                 midi_events[event].clear();
                 if (offevent != nullptr) 
@@ -129,28 +146,33 @@ void MidiConventer::CleanChordVoiceover(int track) {
  * @param track 
  */
 // TODO
-void MidiConventer::CleanRecurNotes(int track) {
+void MidiConventer::CleanRecurNotes(int track)
+{
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList midi_events = (*m_midifile)[track];
-    int block_tick = 4.0/m_duration*(m_midifile->getTicksPerQuarterNote());
+    int block_length = 4.0/m_duration*(m_midifile->getTicksPerQuarterNote());
     std::set<MidiNote*> notes;                              // [notes] 表示所以音
     std::map<int, std::vector<MidiNote*>> block_index;      // block_id -> [note], block_id: 0 -- n-1
     // 将所有的事件读到note中, 并保存每个区块包含哪些音
-    for (int event=0; event< midi_events.size(); event++) {
+    for (int event=0; event< midi_events.size(); event++) 
+    {
         if (midi_events[event].isNoteOn()) {
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
-            if (offevent != nullptr && offevent->tick > midi_events[event].tick) {
+            if (offevent != nullptr && offevent->tick > midi_events[event].tick) 
+            {
                 MidiNote* new_note = new MidiNote(midi_events[event], (*offevent));
                 notes.insert(new_note);
                 int begin_tick  = new_note->GetBeginTick();
                 int end_tick    = new_note->GetEndTick();
-                while(begin_tick < end_tick) {
-                    int block_id = begin_tick/block_tick;
-                    begin_tick += block_tick;
+                while(begin_tick < end_tick) 
+                {
+                    int block_id = begin_tick/block_length;
+                    begin_tick += block_length;
                     block_index[block_id].push_back(new_note);
                 } 
             }
-            else {
+            else 
+            {
                 std::cout<< "MidiConventer::CleanRecurNotes off_event nullptr, MidiEvent seq:" << midi_events[event].seq << std::endl;
             }
         }
@@ -159,8 +181,10 @@ void MidiConventer::CleanRecurNotes(int track) {
     // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
     MidiNote* last_note = nullptr;
     int last_block_id = -1;
-    for (auto iter : block_index) {
-        if (iter.second.size() > 1) {
+    for (auto iter : block_index) 
+    {
+        if (iter.second.size() > 1) 
+        {
             // 当上一小节有音出现
             if (last_note != nullptr && last_block_id == iter.first-1)
             {   
@@ -193,21 +217,24 @@ void MidiConventer::CleanRecurNotes(int track) {
     }
     std::vector<MidiNote*>  tmp_notes;
     std::set<MidiNote*>     new_notes;
-    for (auto note : notes) {
+    for (auto note : notes) 
+    {
         tmp_notes.clear();
-        // CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length);
-        for(auto it:tmp_notes) {
+        MidiNote::CutNote(note, block_index, tmp_notes, block_length);
+        for(auto it:tmp_notes) 
+        {
             new_notes.insert(it);
         }
-         /**
-          * @brief  遍历note所在的几个block，
-          *         根据block_index note在那几个小节是有效的
-          *         裁剪note
-          */
     }
     // 写回midifile
-    m_midifile->clear();
-
+    (*m_midifile)[track].clear();
+    for (auto iter : new_notes)
+    {   
+        m_midifile->addEvent(track, iter->GetBeginEvent());
+        m_midifile->addEvent(track, iter->GetEndEvent());
+    }
+    m_midifile->doTimeAnalysis();
+    m_midifile->sortTrack(track);
 }
 
 /*
@@ -277,12 +304,15 @@ void MidiConventer::CleanRecurNotes(int track) {
  * 
  * @param track 
  */
-void MidiConventer::ProlongNotes(int track) {
+void MidiConventer::ProlongNotes(int track) 
+{
     std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
     std::cout << "QuantifyTrack " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
-    for (int event=0; event< midi_events.size(); event++) {
-        if (midi_events[event].isNoteOff()) {
+    for (int event=0; event< midi_events.size(); event++) 
+    {
+        if (midi_events[event].isNoteOff()) 
+        {
             if (event+1 < midi_events.size() && midi_events[event+1].isNoteOn())
             {
                 midi_events[event].tick = midi_events[event+1].tick;
@@ -293,15 +323,18 @@ void MidiConventer::ProlongNotes(int track) {
     // m_midifile->removeEmpties();
 }
 
-void MidiConventer::PrintMidifile() {
+void MidiConventer::PrintMidifile() 
+{
     int tracks = m_midifile->getTrackCount();
     std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile->getTicksPerQuarterNote() << std::endl;
     if (tracks > 1) std::cout << "TRACKS: " << tracks << std::endl;
-    for (int track=0; track<tracks; track++) {
+    for (int track=0; track<tracks; track++) 
+    {
         std::cout << "\nTrack " << track << std::endl;
         std::cout << "Tick\tSeconds\tDur\tbeat\tMessage" << std::endl;
         const MidiEventList& midi_events = (*m_midifile)[track];
-        for (int event=0; event< midi_events.size(); event++) {
+        for (int event=0; event< midi_events.size(); event++) 
+        {
             std::cout << std::dec << midi_events[event].tick;
             std::cout << '\t' << std::dec << midi_events[event].seconds;
             std::cout << '\t';
@@ -323,13 +356,15 @@ void MidiConventer::PrintMidifile() {
 
 // void MidiConventer::PrintEvent(MidiEvent midi_event) {}
 
-bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) {
+bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) 
+{
     double on_beat = GetBeat(on.tick);
     double off_beat = GetBeat(off.tick);
     // 检查跨和弦
     int on_chord_seq = m_chord_progression->GetChordSeq(on_beat, 0);
     int off_chord_seq = m_chord_progression->GetChordSeq(off_beat, 1);
-    if (on_chord_seq != off_chord_seq) {
+    if (on_chord_seq != off_chord_seq) 
+    {
         return false;
     }
     // 检查跨小节 (先按4拍一小节处理..)
@@ -342,7 +377,8 @@ bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) {
     // };
     int on_section_seq = int (on_beat / 4);
     int off_section_seq = int (off_beat / 4);
-    if (on_section_seq != off_section_seq) {
+    if (on_section_seq != off_section_seq) 
+    {
         return false;
     }
     return true;
@@ -355,7 +391,8 @@ bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) {
  * @param on 
  * @param off 
  */
-void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off) {
+void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off) 
+{
     std::cout<< "Cutting Note begin" << std::endl; 
     double on_beat = GetBeat(on.tick);
     double off_beat = GetBeat(off.tick);
