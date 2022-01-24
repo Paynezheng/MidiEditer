@@ -103,6 +103,7 @@ public:
 	ChordProgression(int chord_progression_id, int modulation);						// TODO:提供转调
 	void 		Init(std::vector<std::tuple<int, int, int>>& chords);				// TODO:index-><chord_enum, chord_base, chord_duration>
 	void 		Reset();
+	void		Clear();
 	bool		IsChordInterior(int beat, int key);
 	bool		IsChordInterior(double beat, int key);
 	int			GetChordSeq(double beat, int event_type);
