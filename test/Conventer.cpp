@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
             // cout<< "5" <<endl;
             input_user->linkNotePairs();
             // cout<< "6" <<endl;
-        // midi_conventer->ProlongNotes(track);
+        midi_conventer->ProlongNotes(track);
     }
 
     input_user->sortTracks();

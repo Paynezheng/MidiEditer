@@ -147,6 +147,7 @@ void MidiConventer::CleanChordVoiceover(int track)
  * @param track 
  */
 // TODO
+/*
 void MidiConventer::CleanRecurNotes(int track)
 {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
@@ -238,8 +239,9 @@ void MidiConventer::CleanRecurNotes(int track)
     m_midifile->doTimeAnalysis();
     m_midifile->sortTrack(m_midifile->getNumTracks() -1);
 }
+*/
 
-/*
+
 void MidiConventer::CleanRecurNotes(int track) {
     std::cout << "\nCleanRecurNotes Track " << track << std::endl;
     MidiEventList& midi_events = (*m_midifile)[track];
@@ -298,7 +300,7 @@ void MidiConventer::CleanRecurNotes(int track) {
     m_midifile->sortTrack(track);
 }
 
-*/
+
 
 
 /**
