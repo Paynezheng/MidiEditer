@@ -23,7 +23,7 @@ namespace smf
 MidiConventer::MidiConventer(MidiFile midifile, ChordProgression chord_progression, int duration)
     :m_midifile(midifile), m_chord_progression(chord_progression), m_duration(duration) 
 {
-
+    m_track_num = m_midifile.getTrackCount();
 }
 
 MidiConventer::MidiConventer(std::string file_url, ChordProgression chord_progression, int duration)
@@ -32,6 +32,7 @@ MidiConventer::MidiConventer(std::string file_url, ChordProgression chord_progre
     m_midifile.read(file_url);
     m_midifile.doTimeAnalysis();
     m_midifile.linkNotePairs();
+    m_track_num = m_midifile.getTrackCount();
 }
 
 void MidiConventer::Reset() 
@@ -39,6 +40,7 @@ void MidiConventer::Reset()
     m_midifile.clear();
     m_chord_progression.Clear();
     m_duration = 0;
+    m_track_num = 0;
 }
 
 void MidiConventer::Clear()
@@ -165,18 +167,18 @@ void MidiConventer::CleanChordVoiceover(int track)
 void MidiConventer::CleanRecurNotes(int track)
 {
     SMF_LOG_DEBUG("CleanRecurNotes Track: %d", track);
-    MidiEventList midi_events = m_midifile[track];
+    // MidiEventList midi_events = m_midifile[track];
     int block_length = 4.0/m_duration*(m_midifile.getTicksPerQuarterNote());
     std::set<MidiNote*> notes;                              // [notes] 表示所以音
     std::map<int, std::vector<MidiNote*>> block_index;      // block_id -> [note], block_id: 0 -- n-1
     // 将所有的事件读到note中, 并保存每个区块包含哪些音
-    for (int event=0; event< midi_events.size(); event++) 
+    for (int event=0; event< m_midifile[track].size(); event++) 
     {
-        if (midi_events[event].isNoteOn()) {
-            MidiEvent* offevent = midi_events[event].getLinkedEvent();
-            if (offevent != nullptr && offevent->tick > midi_events[event].tick) 
+        if (m_midifile[track][event].isNoteOn()) {
+            MidiEvent* offevent = m_midifile[track][event].getLinkedEvent();
+            if (offevent != nullptr && offevent->tick > m_midifile[track][event].tick) 
             {
-                MidiNote* new_note = new MidiNote(midi_events[event], (*offevent));
+                MidiNote* new_note = new MidiNote(m_midifile[track][event], (*offevent));
                 notes.insert(new_note);
                 int begin_tick  = new_note->GetBeginTick();
                 int end_tick    = new_note->GetEndTick();
@@ -189,7 +191,7 @@ void MidiConventer::CleanRecurNotes(int track)
             }
             else 
             {
-                SMF_LOG_ERROR("Link off event is null off_event nullptr, MidiEvent seq: %d", midi_events[event].seq);
+                SMF_LOG_ERROR("Link off event is null off_event nullptr, MidiEvent seq: %d", m_midifile[track][event].seq);
             }
         }
     }

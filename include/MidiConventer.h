@@ -46,7 +46,8 @@ private:
 private:
 	MidiFile  			m_midifile;
 	ChordProgression	m_chord_progression;
-	int 				m_duration;			// 量化一个事件的最小单位
+	int m_duration = 0;			// 量化一个事件的最小单位
+	int	m_track_num = 0;
 };
 
 } // end of namespace smf
