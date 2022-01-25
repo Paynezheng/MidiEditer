@@ -99,6 +99,7 @@ public:
  */
 class ChordProgression {
 public:
+	ChordProgression(){}
 	ChordProgression(int chord_progression_id);
 	ChordProgression(int chord_progression_id, int modulation);						// TODO:提供转调
 	void 		Init(std::vector<std::tuple<int, int, int>>& chords);				// TODO:index-><chord_enum, chord_base, chord_duration>

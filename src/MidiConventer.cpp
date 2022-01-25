@@ -90,7 +90,7 @@ void MidiConventer::QuantifyTrack(int track)
 double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) 
 {
     int tpq = m_midifile.getTicksPerQuarterNote();
-    SMF_LOG_INFO("Midievent.tick=%d",GetBeat(midievent.tick));
+    SMF_LOG_INFO("Midievent.tick=%f", GetBeat(midievent.tick));
     double left_beat = 0;
     double right_beat = 0;
     switch(unit_size) 
@@ -127,7 +127,7 @@ double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int dir
         midievent.tick = right_tick;
     else
         midievent.tick = left_tick;
-    std::cout<< '\t' << GetBeat(midievent.tick) << std::endl;
+    SMF_LOG_INFO("Midievent.tick=%f", GetBeat(midievent.tick));
     return midievent.tick - tmp;
 }
 
@@ -138,7 +138,7 @@ bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
 
 void MidiConventer::CleanChordVoiceover(int track) 
 {
-    std::cout << "\nCleanChordVoiceover Track " << track << std::endl;
+    SMF_LOG_DEBUG("CleanChordVoiceover Track=%d", track);
     MidiEventList& midi_events = m_midifile[track];
     for (int event=0; event< midi_events.size(); event++) 
     {
@@ -164,7 +164,7 @@ void MidiConventer::CleanChordVoiceover(int track)
  */
 void MidiConventer::CleanRecurNotes(int track)
 {
-    std::cout << "\nCleanRecurNotes Track " << track << std::endl;
+    SMF_LOG_DEBUG("CleanRecurNotes Track: %d", track);
     MidiEventList midi_events = m_midifile[track];
     int block_length = 4.0/m_duration*(m_midifile.getTicksPerQuarterNote());
     std::set<MidiNote*> notes;                              // [notes] 表示所以音
@@ -189,7 +189,7 @@ void MidiConventer::CleanRecurNotes(int track)
             }
             else 
             {
-                std::cout<< "MidiConventer::CleanRecurNotes off_event nullptr, MidiEvent seq:" << midi_events[event].seq << std::endl;
+                SMF_LOG_ERROR("Link off event is null off_event nullptr, MidiEvent seq: %d", midi_events[event].seq);
             }
         }
     }
@@ -370,6 +370,11 @@ void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off)
     // 处理跨小节
     // TODO: payne
     std::cout<< "Cutting Note end" << std::endl; 
+}
+
+void MidiConventer::Write2File(std::string) 
+{
+    
 }
 
 } // end namespace smf

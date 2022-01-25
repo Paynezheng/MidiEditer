@@ -18,6 +18,7 @@ namespace smf {
 
 class MidiConventer {
 public:
+	MidiConventer (){}
 	MidiConventer (MidiFile midifile, ChordProgression chord_progression, int duration);
 	MidiConventer (std::string file_url, ChordProgression chord_progression, int duration);
 	void		Reset();
@@ -28,6 +29,7 @@ public:
 	void		CleanChordVoiceover(int track);
 	void		CleanRecurNotes(int track);
 	void		ProlongNotes(int track);
+	void		Write2File(std::string);
 
 public:
 	static void PrintMidifile(MidiFile m_midifile);
