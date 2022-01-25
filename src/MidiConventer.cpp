@@ -53,9 +53,8 @@ double MidiConventer::GetBeat(int tick)
 
 void MidiConventer::QuantifyTrack(int track) 
 {
-    std::cout << "\nQuantifyTrack " << track << std::endl;
+    SMF_LOG_INFO("QuantifyTrack, track=%d", track);
     MidiEventList& midi_events = m_midifile[track];
-    std::cout<<std::endl;
     for (int event=0; event< midi_events.size(); event++) 
     {
         // TODO: 需要移动两个事件(on && off)
@@ -70,11 +69,10 @@ void MidiConventer::QuantifyTrack(int track)
             if(offevent != nullptr) 
             {
                 offevent->tick = offevent->tick + move;
-                // CuttingNote(midi_events[event], *offevent);
             }
             else
             {
-                // printf("")
+                SMF_LOG_ERROR("Link off event is null!");
             }
         }
     }
@@ -83,7 +81,7 @@ void MidiConventer::QuantifyTrack(int track)
 
 /**
  * @brief 量化一个on/off event, 每个事件会移动到最近的节点上, 所以有可能会导致跨小节跨和弦(丢失信息)的问题
- * 
+ *      TODO: 每个小节第一排的量化特殊处理
  * @param midievent 
  * @param //unit_size 量化单位, 2,4,8等分别表示二/四/十六分 读取m_duration
  * @param direction 量化方向,-1向左移动,默认移动到最近节点
@@ -92,7 +90,7 @@ void MidiConventer::QuantifyTrack(int track)
 double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) 
 {
     int tpq = m_midifile.getTicksPerQuarterNote();
-    std::cout<< std::dec << GetBeat(midievent.tick);
+    SMF_LOG_INFO("Midievent.tick=%d",GetBeat(midievent.tick));
     double left_beat = 0;
     double right_beat = 0;
     switch(unit_size) 
@@ -284,36 +282,36 @@ void MidiConventer::ProlongNotes(int track)
 void MidiConventer::PrintMidifile(MidiFile m_midifile) 
 {
     int tracks = m_midifile.getTrackCount();
-    SMF_LOG_INFO("TicksPerQuarterNote(TPQ): %d\n", m_midifile.getTicksPerQuarterNote());
+    SMF_LOG_INFO("TicksPerQuarterNote(TPQ): %d", m_midifile.getTicksPerQuarterNote());
     if (tracks > 1) 
     {
-        SMF_LOG_INFO("Total Tracks: %d\n", tracks);
+        SMF_LOG_INFO("Total Tracks: %d", tracks);
     }
     for (int track=0; track<tracks; track++) 
     {
-        SMF_LOG_INFO("\nCur Track: %d\n", track);
-        SMF_LOG_INFO("Tick\tSeconds\tDur\tMessage\n");
+        SMF_LOG_INFO("\nCur Track: %d", track);
+        SMF_LOG_INFO("Tick\tSeconds\tDur\tMessage");
         const MidiEventList& midi_events = m_midifile[track];
         for (int event=0; event< midi_events.size(); event++) 
         {
-            SMF_LOG_INFO("%d\t", midi_events[event].tick);
-            SMF_LOG_INFO("%f\t", midi_events[event].seconds);
+            // SMF_LOG_INFO("%d\t", midi_events[event].tick);
+            // SMF_LOG_INFO("%f\t", midi_events[event].seconds);
             if (midi_events[event].isNoteOn())
             {
-                SMF_LOG_INFO("%f\t", midi_events[event].getDurationInSeconds());
+                SMF_LOG_INFO("%d\t%f\t%f\t\t", midi_events[event].tick, midi_events[event].seconds, midi_events[event].getDurationInSeconds());
                 // std::cout << midi_events[event].getDurationInSeconds();
             }
-
-            SMF_LOG_INFO("\t");
-            for (auto i=0; i<midi_events[event].size(); i++)
+            else
             {
-                SMF_LOG_INFO("%x ", (int)midi_events[event][i]);
+                SMF_LOG_INFO("%d\t%f\t\t", midi_events[event].tick, midi_events[event].seconds);
             }
 
+            // for (auto i=0; i<midi_events[event].size(); i++)
+            // {
+            //     SMF_LOG_INFO("%x ", (int)midi_events[event][i]);
+            // }
             // std::cout<< std::dec << midi_events[event].getKeyNumber();   // 输出音符
-            SMF_LOG_INFO("\t\n");
         }
-        SMF_LOG_INFO("\n");
     }
 }
 
