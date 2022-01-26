@@ -11,6 +11,7 @@
 
 #include "MidiFile.h"
 #include "MidiConventer.h"
+#include "smflog.h"
 #include <iostream>
 #include <iomanip>
 
@@ -20,40 +21,30 @@ using namespace smf;
 int main(int argc, char** argv) {
     if (argc != 3)
     {
-        cout<< "--> param num error <--"<<endl;
-        // cout<< "./Conventer input_midifile_chord input_midifile 1/2" <<endl;
-        cout<< "./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F_C)" <<endl;
+        SMF_LOG_ERROR("--> param num error <--");
+        SMF_LOG_ERROR("./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F_C)");
         return -1;
     }
-    MidiFile input_user = MidiFile(argv[1]);
-    input_user.doTimeAnalysis();
-    input_user.linkNotePairs();
 
     int param_chord_progression = atoi(argv[2]); // 先默认一个1625
     ChordProgression chord_progression;
-    int tracks = input_user.getTrackCount();
     MidiConventer midi_conventer;
     if (param_chord_progression == 1625 || param_chord_progression == 1) {
         chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);    // 1625
-        midi_conventer = MidiConventer(input_user, chord_progression, 8);
+        midi_conventer = MidiConventer(argv[1], chord_progression, 8);
     }
     else {
         chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__Am_G_F_C);
-        midi_conventer = MidiConventer(input_user, chord_progression, 16);
+        midi_conventer = MidiConventer(argv[1], chord_progression, 16);
     }
+    int tracks = midi_conventer.getTrackCount();
 
     for (int track = 0; track < tracks; track++) {
-        // midi_conventer.QuantifyTrack(track);
-        // midi_conventer.CleanChordVoiceover(track);
-            // input_user->doTimeAnalysis();
-            // input_user->linkNotePairs();
+        midi_conventer.QuantifyTrack(track);
         midi_conventer.CleanRecurNotes(track);
-            // input_user->doTimeAnalysis();
-            // input_user->linkNotePairs();
-        // midi_conventer->ProlongNotes(track);
+        midi_conventer.ProlongNotes(track);
     }
 
-    input_user.sortTracks();
-    input_user.write(argv[1]);
+    midi_conventer.Write2File(argv[1]);
 
 }

@@ -29,10 +29,13 @@ public:
 	void		CleanChordVoiceover(int track);
 	void		CleanRecurNotes(int track);
 	void		ProlongNotes(int track);
-	void		Write2File(std::string);
+	void		Write2File(std::string file_url);
+
+	int			getTrackCount();
 
 public:
 	static void PrintMidifile(MidiFile m_midifile);
+	void 		PrintMidifile();
 
 private:
 	double 		QuantifyEvent(MidiEvent& midievent, int unit_size, int direction);
@@ -47,7 +50,7 @@ private:
 	MidiFile  			m_midifile;
 	ChordProgression	m_chord_progression;
 	int m_duration = 0;			// 量化一个事件的最小单位
-	int	m_track_num = 0;
+	int	m_track_count = 0;
 };
 
 } // end of namespace smf

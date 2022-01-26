@@ -23,7 +23,7 @@ namespace smf
 MidiConventer::MidiConventer(MidiFile midifile, ChordProgression chord_progression, int duration)
     :m_midifile(midifile), m_chord_progression(chord_progression), m_duration(duration) 
 {
-    m_track_num = m_midifile.getTrackCount();
+    m_track_count = m_midifile.getTrackCount();
 }
 
 MidiConventer::MidiConventer(std::string file_url, ChordProgression chord_progression, int duration)
@@ -32,7 +32,7 @@ MidiConventer::MidiConventer(std::string file_url, ChordProgression chord_progre
     m_midifile.read(file_url);
     m_midifile.doTimeAnalysis();
     m_midifile.linkNotePairs();
-    m_track_num = m_midifile.getTrackCount();
+    m_track_count = m_midifile.getTrackCount();
 }
 
 void MidiConventer::Reset() 
@@ -40,12 +40,17 @@ void MidiConventer::Reset()
     m_midifile.clear();
     m_chord_progression.Clear();
     m_duration = 0;
-    m_track_num = 0;
+    m_track_count = 0;
 }
 
 void MidiConventer::Clear()
 {
     Reset();
+}
+
+int MidiConventer::getTrackCount()
+{
+    return m_track_count;
 }
 
 double MidiConventer::GetBeat(int tick) 
@@ -78,7 +83,7 @@ void MidiConventer::QuantifyTrack(int track)
             }
         }
     }
-    // m_midifile.sortTrack(track);
+    m_midifile.sortTrack(track);
 }
 
 /**
@@ -138,6 +143,11 @@ bool MidiConventer::IsChordInterior(const MidiEvent& midievent)
     return m_chord_progression.IsChordInterior((int)GetBeat(midievent.tick), midievent.getKeyNumber());
 }
 
+/**
+ * @brief 去除和弦外音
+ * 
+ * @param track 
+ */
 void MidiConventer::CleanChordVoiceover(int track) 
 {
     SMF_LOG_DEBUG("CleanChordVoiceover Track=%d", track);
@@ -244,16 +254,24 @@ void MidiConventer::CleanRecurNotes(int track)
             new_notes.insert(it);
         }
     }
-    // 写回midifile
-    m_midifile[track].clear();
-    m_midifile.addTrack();
+
+    // 清理原先的事件
+    for (int event=0; event< m_midifile[track].size(); event++) 
+    {
+        if (m_midifile[track][event].isNote())
+        {
+            m_midifile[track][event].clear();
+        }
+    }
+
+    // 将分割后的事件写入midi
     for (auto iter : new_notes)
     {   
-        m_midifile.addEvent(m_midifile.getNumTracks() -1, iter->GetBeginEvent());
-        m_midifile.addEvent(m_midifile.getNumTracks() -1, iter->GetEndEvent());
+        m_midifile.addEvent(track, iter->GetBeginEvent());
+        m_midifile.addEvent(track, iter->GetEndEvent());
     }
     m_midifile.doTimeAnalysis();
-    m_midifile.sortTrack(m_midifile.getNumTracks() -1);
+    m_midifile.sortTrack(track);
 }
 
 
@@ -264,24 +282,49 @@ void MidiConventer::CleanRecurNotes(int track)
  */
 void MidiConventer::ProlongNotes(int track) 
 {
-    std::cout << "TicksPerQuarterNote(TPQ): " << m_midifile.getTicksPerQuarterNote() << std::endl;
-    std::cout << "QuantifyTrack " << track << std::endl;
-    MidiEventList& midi_events = m_midifile[track];
-    for (int event=0; event< midi_events.size(); event++) 
+    SMF_LOG_DEBUG("ProlongNotes Track: %d, TicksPerQuarterNote(TPQ): %d", track, m_midifile.getTicksPerQuarterNote());
+
+    for (int event=0; event< m_midifile[track].size(); event++) 
     {
-        if (midi_events[event].isNoteOff()) 
+        if (m_midifile[track][event].isNoteOff()) 
         {
-            if (event+1 < midi_events.size() && midi_events[event+1].isNoteOn())
+            if (event+1 < m_midifile[track].size() && m_midifile[track][event+1].isNoteOn())
             {
-                midi_events[event].tick = midi_events[event+1].tick;
+                m_midifile[track][event].tick = m_midifile[track][event+1].tick;
             }
         }
     }
     m_midifile.sortTrack(track);
-    // m_midifile.removeEmpties();
 }
 
-void MidiConventer::PrintMidifile(MidiFile m_midifile) 
+void MidiConventer::PrintMidifile(MidiFile midifile) 
+{
+    int tracks = midifile.getTrackCount();
+    SMF_LOG_INFO("TicksPerQuarterNote(TPQ): %d", midifile.getTicksPerQuarterNote());
+    if (tracks > 1) 
+    {
+        SMF_LOG_INFO("Total Tracks: %d", tracks);
+    }
+    for (int track=0; track<tracks; track++) 
+    {
+        SMF_LOG_INFO("\nCur Track: %d", track);
+        SMF_LOG_INFO("Tick\tSeconds\tDur\tMessage");
+        const MidiEventList& midi_events = midifile[track];
+        for (int event=0; event< midi_events.size(); event++) 
+        {
+            if (midi_events[event].isNoteOn())
+            {
+                SMF_LOG_INFO("%d\t%f\t%f\t\t", midi_events[event].tick, midi_events[event].seconds, midi_events[event].getDurationInSeconds());
+            }
+            else
+            {
+                SMF_LOG_INFO("%d\t%f\t\t", midi_events[event].tick, midi_events[event].seconds);
+            }
+        }
+    }
+}
+
+void MidiConventer::PrintMidifile()
 {
     int tracks = m_midifile.getTrackCount();
     SMF_LOG_INFO("TicksPerQuarterNote(TPQ): %d", m_midifile.getTicksPerQuarterNote());
@@ -296,29 +339,28 @@ void MidiConventer::PrintMidifile(MidiFile m_midifile)
         const MidiEventList& midi_events = m_midifile[track];
         for (int event=0; event< midi_events.size(); event++) 
         {
-            // SMF_LOG_INFO("%d\t", midi_events[event].tick);
-            // SMF_LOG_INFO("%f\t", midi_events[event].seconds);
             if (midi_events[event].isNoteOn())
             {
                 SMF_LOG_INFO("%d\t%f\t%f\t\t", midi_events[event].tick, midi_events[event].seconds, midi_events[event].getDurationInSeconds());
-                // std::cout << midi_events[event].getDurationInSeconds();
             }
             else
             {
                 SMF_LOG_INFO("%d\t%f\t\t", midi_events[event].tick, midi_events[event].seconds);
             }
-
-            // for (auto i=0; i<midi_events[event].size(); i++)
-            // {
-            //     SMF_LOG_INFO("%x ", (int)midi_events[event][i]);
-            // }
-            // std::cout<< std::dec << midi_events[event].getKeyNumber();   // 输出音符
         }
     }
 }
 
 // void MidiConventer::PrintEvent(MidiEvent midi_event) {}
 
+/**
+ * @brief 检查跨和弦和跨小节的音
+ * 
+ * @param on 
+ * @param off 
+ * @return true 
+ * @return false 
+ */
 bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off) 
 {
     double on_beat = GetBeat(on.tick);
@@ -353,10 +395,10 @@ bool MidiConventer::CheckNoteValid(const MidiEvent& on, const MidiEvent& off)
  * 跨小节, 直接将off事件的事件挪到on事件小节的末尾  (暂时逻辑)
  * @param on 
  * @param off 
+ * 暂时没用
  */
-void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off) 
+void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off)  
 {
-    std::cout<< "Cutting Note begin" << std::endl; 
     double on_beat = GetBeat(on.tick);
     double off_beat = GetBeat(off.tick);
 
@@ -371,12 +413,22 @@ void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off)
     }
     // 处理跨小节
     // TODO: payne
-    std::cout<< "Cutting Note end" << std::endl; 
 }
 
-void MidiConventer::Write2File(std::string) 
+void MidiConventer::Write2File(std::string file_url) 
 {
-    
+    if (file_url.empty())
+    {
+        SMF_LOG_ERROR("Wrong file url! file_url is empty");
+        return;
+    }
+    else
+    {
+        if (!m_midifile.write(file_url))
+        {
+            SMF_LOG_ERROR("Error: could not write: %s", file_url);
+        }
+    }
 }
 
 } // end namespace smf
