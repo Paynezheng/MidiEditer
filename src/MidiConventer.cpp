@@ -69,12 +69,12 @@ void MidiConventer::QuantifyTrack(int track)
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) 
         {
-            double move = QuantifyEvent(midi_events[event], m_duration, 0);
             MidiEvent* offevent = midi_events[event].getLinkedEvent();
             // 移动on也要移动off，保持音长不变
             // QuantifyEvent(*offevent, m_duration, 0);
             if(offevent != nullptr) 
             {
+                double move = QuantifyEvent(midi_events[event], m_duration, 0);
                 offevent->tick = offevent->tick + move;
             }
             else
@@ -89,6 +89,7 @@ void MidiConventer::QuantifyTrack(int track)
 /**
  * @brief 量化一个on/off event, 每个事件会移动到最近的节点上, 所以有可能会导致跨小节跨和弦(丢失信息)的问题
  *      TODO: 每个小节第一排的量化特殊处理
+ *      TODO: 量化力度
  * @param midievent 
  * @param //unit_size 量化单位, 2,4,8等分别表示二/四/十六分 读取m_duration
  * @param direction 量化方向,-1向左移动,默认移动到最近节点
@@ -263,14 +264,13 @@ void MidiConventer::CleanRecurNotes(int track)
             m_midifile[track][event].clear();
         }
     }
-
+    m_midifile.removeEmpties();
     // 将分割后的事件写入midi
     for (auto iter : new_notes)
     {   
         m_midifile.addEvent(track, iter->GetBeginEvent());
         m_midifile.addEvent(track, iter->GetEndEvent());
     }
-    m_midifile.doTimeAnalysis();
     m_midifile.sortTrack(track);
 }
 
@@ -424,6 +424,8 @@ void MidiConventer::Write2File(std::string file_url)
     }
     else
     {
+        m_midifile.removeEmpties();
+        m_midifile.sortTracks();
         if (!m_midifile.write(file_url))
         {
             SMF_LOG_ERROR("Error: could not write: %s", file_url);
