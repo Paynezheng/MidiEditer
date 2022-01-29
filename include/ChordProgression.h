@@ -95,6 +95,7 @@ public:
 
 /**
  * @brief 和弦进行类, 后续如果有特别的需求可以新写一个和弦进行类来初始化MidiConventer
+ * 		// TODO： 初始化和弦改为数值配置
  * 			
  */
 class ChordProgression {

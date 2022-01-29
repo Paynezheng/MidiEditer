@@ -197,13 +197,27 @@ void MidiConventer::CleanRecurNotes(int track)
                 {
                     int block_id = begin_tick/block_length;
                     begin_tick += block_length;
-                    block_index[block_id].push_back(new_note);
+                    if (block_index.count(block_id) == 0)
+                    {
+                        block_index.emplace(block_id, std::vector<MidiNote*>());
+                    }
+                    block_index[block_id].emplace_back(new_note);
+                    // block_index[block_id].push_back(new_note);
                 } 
             }
             else 
             {
                 SMF_LOG_ERROR("Link off event is null off_event nullptr, MidiEvent seq: %d", m_midifile[track][event].seq);
             }
+        }
+    }
+
+    for (auto iter:block_index)
+    {
+        // SMF_LOG_WARN("block_index: %d", iter.first);
+        for (auto note:iter.second)
+        {
+            SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
         }
     }
 
@@ -244,6 +258,15 @@ void MidiConventer::CleanRecurNotes(int track)
             last_block_id = iter.first;
         }
     }
+    for (auto iter:block_index)
+    {
+        // SMF_LOG_WARN("block_index: %d", iter.first);
+        for (auto note:iter.second)
+        {
+            SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
+        }
+    }
+
     std::vector<MidiNote*>  tmp_notes;
     std::set<MidiNote*>     new_notes;
     for (auto note : notes) 
