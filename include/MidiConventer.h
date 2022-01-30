@@ -18,14 +18,23 @@ namespace smf {
 
 class MidiConventer {
 public:
-	MidiConventer (MidiFile* midifile, ChordProgression* chord_progression, int duration);
+	MidiConventer (){}
+	MidiConventer (MidiFile midifile, ChordProgression chord_progression, int duration);
+	MidiConventer (std::string file_url, ChordProgression chord_progression, int duration);
 	void		Reset();
+	void		Clear();
 	bool		Convent(int track, int bpm, int chords);
 
 	void		QuantifyTrack(int track);
 	void		CleanChordVoiceover(int track);
 	void		CleanRecurNotes(int track);
 	void		ProlongNotes(int track);
+	void		Write2File(std::string file_url);
+
+	int			getTrackCount();
+
+public:
+	static void PrintMidifile(MidiFile m_midifile);
 	void 		PrintMidifile();
 
 private:
@@ -38,9 +47,10 @@ private:
 
 
 private:
-	MidiFile* 			m_midifile = nullptr;
-	ChordProgression*	m_chord_progression	= nullptr;
-	int 				m_duration;			// 量化一个事件的最小单位
+	MidiFile  			m_midifile;
+	ChordProgression	m_chord_progression;
+	int m_duration = 0;			// 量化一个事件的最小单位
+	int	m_track_count = 0;
 };
 
 } // end of namespace smf

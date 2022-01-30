@@ -9,6 +9,7 @@
 
 
 #include "MidiFile.h"
+#include "smflog.h"
 #include "Options.h"
 #include <iostream>
 #include <iomanip>

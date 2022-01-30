@@ -9,6 +9,7 @@
 
 #include "MidiNote.h"
 #include "MidiEvent.h"
+#include "smflog.h"
 #include <algorithm>
 
 namespace smf
@@ -41,12 +42,14 @@ void MidiNote::CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote
     int cur_begin_tick  = origin_note->GetBeginTick();
     int cur_end_tick    = cur_begin_tick;
     int end_tick    = origin_note->GetEndTick();
-    printf("pre_note: begin: %d, end: %d", cur_begin_tick, end_tick);
+
+    SMF_LOG_DEBUG("Before cut note, note: begin: %d, end: %d", cur_begin_tick, end_tick);
     while(cur_end_tick < end_tick)
     {
         int block_id = cur_end_tick/block_length;
         if (find(block_index[block_id].begin(), block_index[block_id].end(), origin_note) == block_index[block_id].end())
         {
+            SMF_LOG_ERROR("The Note is Cutted! ");
             // 此block中不含此音
             if (cur_begin_tick != -1)
             {
@@ -64,6 +67,7 @@ void MidiNote::CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote
         }
         else
         {
+            SMF_LOG_WARN("The Note isn't Cutted! block_id:%d", block_id);
             if (cur_begin_tick != -1)
             {
                 // 继续当前音
@@ -82,7 +86,7 @@ void MidiNote::CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote
     }
     for (auto it : result)
     {
-        printf("after_note: begin: %d, end: %d", it->GetBeginTick(), it->GetEndTick());
+        SMF_LOG_DEBUG("after_note: begin: %d, end: %d", it->GetBeginTick(), it->GetEndTick());
     }
 }
 
