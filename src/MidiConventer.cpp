@@ -64,7 +64,6 @@ void MidiConventer::QuantifyTrack(int track)
     MidiEventList& midi_events = m_midifile[track];
     for (int event=0; event< midi_events.size(); event++) 
     {
-        // TODO: 需要移动两个事件(on && off)
         // 一个note不能越过小节线
         // 一个note不能跨和弦
         if (midi_events[event].isNoteOn()) 
@@ -212,14 +211,14 @@ void MidiConventer::CleanRecurNotes(int track)
         }
     }
 
-    for (auto iter:block_index)
-    {
-        // SMF_LOG_WARN("block_index: %d", iter.first);
-        for (auto note:iter.second)
-        {
-            SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
-        }
-    }
+    // for (auto iter:block_index)
+    // {
+    //     // SMF_LOG_WARN("block_index: %d", iter.first);
+    //     for (auto note:iter.second)
+    //     {
+    //         SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
+    //     }
+    // }
 
     // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
     MidiNote* last_note = nullptr;
@@ -229,15 +228,15 @@ void MidiConventer::CleanRecurNotes(int track)
         if (iter.second.size() > 1) 
         {
             // 当上一小节有音出现
-            SMF_LOG_ERROR("block_size>1,size:%d,index:%d", iter.second.size(), iter.first);
-            // if (last_note != nullptr && last_block_id == iter.first-1)
-            // {   
-            //     auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
-            //     if (the_same_note != iter.second.end())
-            //     {
-            //         iter.second.erase(the_same_note);
-            //     }
-            // }
+            SMF_LOG_DEBUG("block_size>1,size:%d,index:%d", iter.second.size(), iter.first);
+            if (last_note != nullptr && last_block_id == iter.first-1)
+            {   
+                auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
+                if (the_same_note != iter.second.end())
+                {
+                    iter.second.erase(the_same_note);
+                }
+            }
             // 随机保留一个音,其他的音全部删除
             int save_note_index = rand() % iter.second.size();
             MidiNote* tmp = iter.second[save_note_index];
@@ -259,14 +258,14 @@ void MidiConventer::CleanRecurNotes(int track)
             last_block_id = iter.first;
         }
     }
-    for (auto iter:block_index)
-    {
-        // SMF_LOG_WARN("block_index: %d", iter.first);
-        for (auto note:iter.second)
-        {
-            SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
-        }
-    }
+    // for (auto iter:block_index)
+    // {
+    //     // SMF_LOG_WARN("block_index: %d", iter.first);
+    //     for (auto note:iter.second)
+    //     {
+    //         SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
+    //     }
+    // }
 
     std::vector<MidiNote*>  tmp_notes;
     std::set<MidiNote*>     new_notes;
