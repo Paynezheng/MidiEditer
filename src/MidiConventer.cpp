@@ -224,24 +224,25 @@ void MidiConventer::CleanRecurNotes(int track)
     // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
     MidiNote* last_note = nullptr;
     int last_block_id = -1;
-    for (auto iter : block_index) 
+    for (auto& iter : block_index) 
     {
         if (iter.second.size() > 1) 
         {
             // 当上一小节有音出现
-            if (last_note != nullptr && last_block_id == iter.first-1)
-            {   
-                auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
-                if (the_same_note != iter.second.end())
-                {
-                    iter.second.erase(the_same_note);
-                }
-            }
+            SMF_LOG_ERROR("block_size>1,size:%d,index:%d", iter.second.size(), iter.first);
+            // if (last_note != nullptr && last_block_id == iter.first-1)
+            // {   
+            //     auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
+            //     if (the_same_note != iter.second.end())
+            //     {
+            //         iter.second.erase(the_same_note);
+            //     }
+            // }
             // 随机保留一个音,其他的音全部删除
             int save_note_index = rand() % iter.second.size();
             MidiNote* tmp = iter.second[save_note_index];
             iter.second.clear();
-            iter.second.push_back(tmp);
+            iter.second.emplace_back(tmp);
             // 临时变量表示此block使用的音和block_id
             last_note = tmp;
             last_block_id = iter.first;
