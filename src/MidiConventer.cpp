@@ -456,5 +456,19 @@ void MidiConventer::Write2File(std::string file_url)
     }
 }
 
+void MidiConventer::QualifyVol(int track)
+{
+
+}
+
+void MidiConventer::SetBPM(int bpm)
+{
+    // 120->bpm
+    // m_midifile.addTempo()
+    // m_midifile.setTPQ(tick);
+}
+
+
+
 } // end namespace smf
 

@@ -29,6 +29,8 @@ public:
 	void		CleanChordVoiceover(int track);
 	void		CleanRecurNotes(int track);
 	void		ProlongNotes(int track);
+	void 		QualifyVol(int track);
+	void		SetBPM(int bpm);
 	void		Write2File(std::string file_url);
 
 	int			getTrackCount();
