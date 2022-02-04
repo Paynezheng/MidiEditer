@@ -466,6 +466,7 @@ void MidiConventer::SetBPM(int track, int bpm)
     // 120->bpm
     m_midifile.addTempo(track, 0, bpm);
     // m_midifile.setTPQ(tick);
+    m_midifile.sortTrack(track);
 }
 
 
