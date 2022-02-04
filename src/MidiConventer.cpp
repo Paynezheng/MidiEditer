@@ -461,10 +461,10 @@ void MidiConventer::QualifyVol(int track)
 
 }
 
-void MidiConventer::SetBPM(int bpm)
+void MidiConventer::SetBPM(int track, int bpm)
 {
     // 120->bpm
-    // m_midifile.addTempo()
+    m_midifile.addTempo(track, 0, bpm);
     // m_midifile.setTPQ(tick);
 }
 
