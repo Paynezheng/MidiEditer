@@ -30,7 +30,7 @@ public:
 	void		CleanRecurNotes(int track);
 	void		ProlongNotes(int track);
 	void 		QualifyVol(int track);
-	void		SetBPM(int track, int bpm);
+	void		SetBPM(int track, double bpm);
 	void		Write2File(std::string file_url);
 
 	int			getTrackCount();
