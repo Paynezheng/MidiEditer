@@ -460,7 +460,7 @@ void MidiConventer::QualifyVol(int track)
 {
     for (int event=0; event< m_midifile[track].size(); event++) 
     {
-        if (m_midifile[track][event].isNoteOn()) {
+        if (m_midifile[track][event].isNote()) {
             int origin_vel = m_midifile[track][event].getVelocity();
             int qualified_vel = 0;
             if (origin_vel<=30)

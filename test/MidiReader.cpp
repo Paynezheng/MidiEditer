@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
    if (tracks > 1) cout << "TRACKS: " << tracks << endl;
    for (int track=0; track<tracks; track++) {
       if (tracks > 1) cout << "\nTrack " << track << endl;
-      cout << "Tick\tSeconds\tDur\tSeq\tMessage" << endl;
+      cout << "Tick\tSeconds\tDur\tSeq\tMessage\tVel" << endl;
       for (int event=0; event<midifile[track].size(); event++) {
          cout << dec << midifile[track][event].tick;
          cout << '\t' << dec << midifile[track][event].seconds;
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
          for (auto i=0; i<midifile[track][event].size(); i++)
             cout << (int)midifile[track][event][i] << ' ';
          cout<< '\t';
-         cout<< dec << midifile[track][event].getKeyNumber();   // 输出音符
+         cout<< dec << midifile[track][event].getVelocity();   // 输出音符
          cout << endl;
       }
    }
