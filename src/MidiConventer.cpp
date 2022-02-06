@@ -458,7 +458,32 @@ void MidiConventer::Write2File(std::string file_url)
 
 void MidiConventer::QualifyVol(int track)
 {
-
+    for (int event=0; event< m_midifile[track].size(); event++) 
+    {
+        if (m_midifile[track][event].isNoteOn()) {
+            int origin_vel = m_midifile[track][event].getVelocity();
+            int qualified_vel = 0;
+            if (origin_vel<=30)
+            {
+                qualified_vel = 30;
+            }
+            else if (origin_vel>30 && origin_vel <= 60)
+            {
+                qualified_vel = 60;
+            }
+            else if (origin_vel>60 && origin_vel <= 90)
+            {
+                qualified_vel = 90;
+            }
+            else
+            {
+                qualified_vel = 120;
+            }
+            
+            SMF_LOG_DEBUG("origin_vel: %d, qualified_vel: %d", origin_vel, qualified_vel);
+            m_midifile[track][event].setVelocity(qualified_vel);
+        }
+    }
 }
 
 void MidiConventer::SetBPM(int track, double bpm)
@@ -468,6 +493,7 @@ void MidiConventer::SetBPM(int track, double bpm)
     {
         if (m_midifile[track][event].isTempo()) {
             m_midifile[track][event].makeTempo(bpm);
+            break;
         }
     }
     
