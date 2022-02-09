@@ -61,23 +61,25 @@ double MidiConventer::GetBeat(int tick)
 void MidiConventer::QuantifyTrack(int track) 
 {
     SMF_LOG_INFO("QuantifyTrack, track=%d", track);
-    MidiEventList& midi_events = m_midifile[track];
-    for (int event=0; event< midi_events.size(); event++) 
+    // MidiEventList& midi_events = m_midifile[track];
+    for (int event=0; event< m_midifile[track].size(); event++) 
     {
         // 一个note不能越过小节线
         // 一个note不能跨和弦
-        if (midi_events[event].isNoteOn()) 
+        if (m_midifile[track][event].isNoteOn()) 
         {
-            MidiEvent* offevent = midi_events[event].getLinkedEvent();
+            MidiEvent* offevent = m_midifile[track][event].getLinkedEvent();
             // 移动on也要移动off，保持音长不变
             // QuantifyEvent(*offevent, m_duration, 0);
+            double move = QuantifyEvent(m_midifile[track][event], m_duration, 0);
             if(offevent != nullptr) 
             {
-                double move = QuantifyEvent(midi_events[event], m_duration, 0);
+
                 offevent->tick = offevent->tick + move;
             }
             else
             {
+                // m_midifile[track].clear()
                 SMF_LOG_ERROR("Link off event is null!");
             }
         }

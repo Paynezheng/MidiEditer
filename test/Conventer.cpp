@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    int param_chord_progression = atoi(argv[2]); // 先默认一个1625
+    int param_chord_progression = atoi(argv[2]);
     ChordProgression chord_progression;
     MidiConventer midi_conventer;
     if (param_chord_progression == 1625 || param_chord_progression == 1) {
-        chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);    // 1625
+        chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);
         midi_conventer = MidiConventer(argv[1], chord_progression, 8);
     }
     else {
