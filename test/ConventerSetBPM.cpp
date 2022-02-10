@@ -19,7 +19,7 @@ using namespace std;
 using namespace smf;
 
 int main(int argc, char** argv) {
-    if (argc != 3)
+    if (argc != 4)
     {
         SMF_LOG_ERROR("--> param num error <--");
         SMF_LOG_ERROR("./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F_C)");

@@ -29,7 +29,11 @@ MidiConventer::MidiConventer(MidiFile midifile, ChordProgression chord_progressi
 MidiConventer::MidiConventer(std::string file_url, ChordProgression chord_progression, int duration)
     :m_chord_progression(chord_progression), m_duration(duration) 
 {
-    m_midifile.read(file_url);
+    if (!m_midifile.read(file_url))
+    {
+        SMF_LOG_ERROR("MidiConventer construct fail!");
+        return;
+    }
     m_midifile.doTimeAnalysis();
     m_midifile.linkNotePairs();
     m_track_count = m_midifile.getTrackCount();
@@ -171,7 +175,10 @@ void MidiConventer::CleanChordVoiceover(int track)
     m_midifile.sortTrack(track);
 }
 /**
- * @brief 当前逻辑: 遍历音符点,先遍历的音符点保留，后遍历的音符与先遍历的有重叠的则删除之
+ * @brief 
+ * 当前逻辑:
+ *      set<MidiNote*> notes 保存原时文件中的音符 
+ * 
  * MidiEventList::eventcompare 保证了MidiEventList的时间序
  * TODO: 保留变化音
  * @param track 
