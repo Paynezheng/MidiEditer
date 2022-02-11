@@ -178,7 +178,9 @@ void MidiConventer::CleanChordVoiceover(int track)
  * @brief 
  * 当前逻辑:
  *      set<MidiNote*> notes 保存原时文件中的音符 
- * 
+ *      std::map<int, std::vector<MidiNote*>> block_index;      // block_id -> [note], 每个块上都有什么音
+ *      遍历每个小节,除了上一小节出现过的随机保留一个note
+ *      
  * MidiEventList::eventcompare 保证了MidiEventList的时间序
  * TODO: 保留变化音
  * @param track 
@@ -234,13 +236,14 @@ void MidiConventer::CleanRecurNotes(int track)
     int last_block_id = -1;
     for (auto& iter : block_index) 
     {
+        SMF_LOG_DEBUG("block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
         if (iter.second.size() > 1) 
         {
             // 当上一小节有音出现
-            SMF_LOG_DEBUG("block_size>1,size:%d,index:%d", iter.second.size(), iter.first);
-            if (last_note != nullptr && last_block_id == iter.first-1)
+            if (last_note != nullptr && last_block_id == iter.first - 1)
             {   
                 auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
+                SMF_LOG_DEBUG("find same note to last block")
                 if (the_same_note != iter.second.end())
                 {
                     iter.second.erase(the_same_note);
@@ -460,7 +463,7 @@ void MidiConventer::Write2File(std::string file_url)
         m_midifile.sortTracks();
         if (!m_midifile.write(file_url))
         {
-            SMF_LOG_ERROR("Error: could not write: %s", file_url);
+            SMF_LOG_ERROR("Error: could not write: %s", file_url.c_str());
         }
     }
 }

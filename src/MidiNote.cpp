@@ -38,7 +38,7 @@ int MidiNote::GetEndTick()
 
 void MidiNote::CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length)
 {
-    MidiNote* new_note = new MidiNote();
+    // MidiNote* new_note = new MidiNote();
     int cur_begin_tick  = origin_note->GetBeginTick();
     int cur_end_tick    = cur_begin_tick;
     int end_tick    = origin_note->GetEndTick();
@@ -94,6 +94,8 @@ MidiNote* MidiNote::CutOneNote(MidiNote* origin_note, int begin_tick, int end_ti
 {
     MidiEvent* begin_event  = new MidiEvent(origin_note->GetBeginEvent());
     MidiEvent* end_event    = new MidiEvent(origin_note->GetEndEvent());
+    begin_event->tick   = begin_tick;
+    end_event->tick     = end_tick;
     begin_event->linkEvent(end_event);
     MidiNote* new_note = new MidiNote(*begin_event, *end_event);
     return new_note;

@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
          cout << '\t';
          cout<< midifile[track][event].seq;
          cout << '\t' << hex;
-         for (auto i=0; i<midifile[track][event].size(); i++)
-            cout << (int)midifile[track][event][i] << ' ';
+         for (auto iter : midifile[track][event])
+            cout << (int)iter << ' ';
          cout<< '\t';
          cout<< dec << midifile[track][event].getVelocity();   // 输出音符
          cout << endl;

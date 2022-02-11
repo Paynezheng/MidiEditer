@@ -27,11 +27,10 @@ int main(int argc, char** argv) {
     bool    timing_qualify = false;
     bool    rm_notes = false;
     bool    vol_qualify = false;
-    bool    set_bpm = false;
 
     char    param;
 
-    while ((param = getopt(argc, argv, "f:b:c:")) != EOF)
+    while ((param = getopt(argc, argv, "f:b:c:trv")) != EOF)
     {
         switch (param)
         {
@@ -40,7 +39,6 @@ int main(int argc, char** argv) {
                 break;
             case 'b':
                 bpm = atof(optarg);
-                set_bpm = true;
                 break;
             case 'c':
                 chord = atoi(optarg);
@@ -102,7 +100,7 @@ int main(int argc, char** argv) {
         }
         if (bpm != 0)
         {
-            midi_conventer.SetBPM(track, 100);      // 设置bpm
+            midi_conventer.SetBPM(track, bpm);      // 设置bpm
         }
         // midi_conventer.ProlongNotes(track);
     }
