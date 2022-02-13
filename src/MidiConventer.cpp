@@ -189,7 +189,8 @@ void MidiConventer::CleanRecurNotes(int track)
 {
     SMF_LOG_DEBUG("CleanRecurNotes Track: %d", track);
     // MidiEventList midi_events = m_midifile[track];
-    int block_length = 4.0/m_duration*(m_midifile.getTicksPerQuarterNote());
+    int block_length = 4.0 / m_duration*(m_midifile.getTicksPerQuarterNote());
+    SMF_LOG_DEBUG("TicksperQuaterNote: %d, block_length: %d", m_midifile.getTicksPerQuarterNote(), block_length);
     std::set<MidiNote*> notes;                              // [notes] 表示所以音
     std::map<int, std::vector<MidiNote*>> block_index;      // block_id -> [note], block_id: 0 -- n-1
     // 将所有的事件读到note中, 并保存每个区块包含哪些音
@@ -201,7 +202,7 @@ void MidiConventer::CleanRecurNotes(int track)
             {
                 MidiNote* new_note = new MidiNote(m_midifile[track][event], (*offevent));
                 notes.insert(new_note);
-                int begin_tick  = new_note->GetBeginTick();
+                int begin_tick  = new_note->GetBeginTick() / block_length * block_length;  // 这个begin 应该是开始位置的那个block的位置
                 int end_tick    = new_note->GetEndTick();
                 while(begin_tick < end_tick) 
                 {
@@ -236,16 +237,16 @@ void MidiConventer::CleanRecurNotes(int track)
     int last_block_id = -1;
     for (auto& iter : block_index) 
     {
-        SMF_LOG_DEBUG("block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
+        SMF_LOG_DEBUG("before clean block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
         if (iter.second.size() > 1) 
         {
             // 当上一小节有音出现
             if (last_note != nullptr && last_block_id == iter.first - 1)
             {   
                 auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
-                SMF_LOG_DEBUG("find same note to last block")
                 if (the_same_note != iter.second.end())
                 {
+                    SMF_LOG_DEBUG("find same note to last block")
                     iter.second.erase(the_same_note);
                 }
             }
@@ -269,6 +270,7 @@ void MidiConventer::CleanRecurNotes(int track)
             last_note = nullptr;
             last_block_id = iter.first;
         }
+        SMF_LOG_DEBUG("after clean block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
     }
     // for (auto iter:block_index)
     // {

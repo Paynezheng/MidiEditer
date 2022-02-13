@@ -39,8 +39,9 @@ int MidiNote::GetEndTick()
 void MidiNote::CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length)
 {
     // MidiNote* new_note = new MidiNote();
-    int cur_begin_tick  = origin_note->GetBeginTick();
+    int cur_begin_tick  = origin_note->GetBeginTick(); // !=-1是表示前几个小节有几个音正在持续
     int cur_end_tick    = cur_begin_tick;
+    int begin_tick  = origin_note->GetBeginTick();
     int end_tick    = origin_note->GetEndTick();
 
     SMF_LOG_DEBUG("Before cut note, note: begin: %d, end: %d", cur_begin_tick, end_tick);
@@ -77,7 +78,7 @@ void MidiNote::CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote
                 cur_begin_tick = cur_end_tick;
             }
         }
-        cur_end_tick += block_length;
+        cur_end_tick = (cur_end_tick + block_length) / block_length * block_length;
     }
     if (cur_begin_tick != -1)
     {
