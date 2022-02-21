@@ -9,6 +9,7 @@
 
 
 #include "MidiFile.h"
+#include "smflog.h"
 #include "Options.h"
 #include <iostream>
 #include <iomanip>
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
    if (tracks > 1) cout << "TRACKS: " << tracks << endl;
    for (int track=0; track<tracks; track++) {
       if (tracks > 1) cout << "\nTrack " << track << endl;
-      cout << "Tick\tSeconds\tDur\tSeq\tMessage" << endl;
+      cout << "Tick\tSeconds\tDur\tSeq\tMessage\tVel" << endl;
       for (int event=0; event<midifile[track].size(); event++) {
          cout << dec << midifile[track][event].tick;
          cout << '\t' << dec << midifile[track][event].seconds;
@@ -40,10 +41,10 @@ int main(int argc, char** argv) {
          cout << '\t';
          cout<< midifile[track][event].seq;
          cout << '\t' << hex;
-         for (auto i=0; i<midifile[track][event].size(); i++)
-            cout << (int)midifile[track][event][i] << ' ';
+         for (auto iter : midifile[track][event])
+            cout << (int)iter << ' ';
          cout<< '\t';
-         cout<< dec << midifile[track][event].getKeyNumber();   // 输出音符
+         cout<< dec << midifile[track][event].getVelocity();   // 输出音符
          cout << endl;
       }
    }

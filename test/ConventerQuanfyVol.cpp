@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    int param_chord_progression = atoi(argv[2]);
+    int param_chord_progression = atoi(argv[2]); // 先默认一个1625
     ChordProgression chord_progression;
     MidiConventer midi_conventer;
     if (param_chord_progression == 1625 || param_chord_progression == 1) {
-        chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);
+        chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);    // 1625
         midi_conventer = MidiConventer(argv[1], chord_progression, 8);
     }
     else {
@@ -40,12 +40,7 @@ int main(int argc, char** argv) {
     int tracks = midi_conventer.getTrackCount();
 
     for (int track = 0; track < tracks; track++) {
-        midi_conventer.QuantifyTrack(track);
-        midi_conventer.CleanRecurNotes(track);
         midi_conventer.QualifyVol(track);
-        midi_conventer.SetBPM(track, 100);
-
-        // midi_conventer.ProlongNotes(track);
     }
 
     midi_conventer.Write2File(argv[1]);

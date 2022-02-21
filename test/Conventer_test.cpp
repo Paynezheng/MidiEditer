@@ -39,20 +39,21 @@ int main(int argc, char** argv) {
         cout<< "./Conventer_test midifile" <<endl;
         return -1;
     }
-    MidiFile* midifile = new MidiFile();
-    midifile->read(argv[1]);
-    midifile->doTimeAnalysis();
-    midifile->linkNotePairs();
+    MidiFile midifile = MidiFile();
+    midifile.read(argv[1]);
+    midifile.doTimeAnalysis();
+    midifile.linkNotePairs();
 
-    int tracks = midifile->getTrackCount();
-    MidiConventer* midi_conventer = new MidiConventer(midifile, chord_progression_test, 1);
-    midi_conventer->PrintMidifile();
-    if (tracks == 1) {
-        midi_conventer->QuantifyTrack(0);
-        midi_conventer->CleanChordVoiceover(0);
-        midifile->sortTracks();
-        // midifile->write("payne");
-    }
-    midi_conventer->PrintMidifile();
+    MidiConventer::PrintMidifile(midifile);
+    // int tracks = midifile->getTrackCount();
+    // MidiConventer* midi_conventer = new MidiConventer(midifile, chord_progression_test, 1);
+    // midi_conventer->PrintMidifile();
+    // if (tracks == 1) {
+    //     midi_conventer->QuantifyTrack(0);
+    //     midi_conventer->CleanChordVoiceover(0);
+    //     midifile->sortTracks();
+    //     // midifile->write("payne");
+    // }
+    // midi_conventer->PrintMidifile();
     return 0;
 }

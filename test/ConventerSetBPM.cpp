@@ -19,18 +19,19 @@ using namespace std;
 using namespace smf;
 
 int main(int argc, char** argv) {
-    if (argc != 3)
+    if (argc != 4)
     {
         SMF_LOG_ERROR("--> param num error <--");
         SMF_LOG_ERROR("./Conventer input_midifile 1(C_F_Am_G)/2(Am_G_F_C)");
         return -1;
     }
 
-    int param_chord_progression = atoi(argv[2]);
+    int param_chord_progression = atoi(argv[2]); // 先默认一个1625
+    int bmp = atoi(argv[3]);
     ChordProgression chord_progression;
     MidiConventer midi_conventer;
     if (param_chord_progression == 1625 || param_chord_progression == 1) {
-        chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);
+        chord_progression = ChordProgression(EN_CHORD_PROGRESSIONS_TYPE__C_F_Am_G);    // 1625
         midi_conventer = MidiConventer(argv[1], chord_progression, 8);
     }
     else {
@@ -40,12 +41,7 @@ int main(int argc, char** argv) {
     int tracks = midi_conventer.getTrackCount();
 
     for (int track = 0; track < tracks; track++) {
-        midi_conventer.QuantifyTrack(track);
-        midi_conventer.CleanRecurNotes(track);
-        midi_conventer.QualifyVol(track);
-        midi_conventer.SetBPM(track, 100);
-
-        // midi_conventer.ProlongNotes(track);
+        midi_conventer.SetBPM(track, bmp);
     }
 
     midi_conventer.Write2File(argv[1]);
