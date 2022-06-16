@@ -66,6 +66,7 @@ void MidiConventer::QuantifyTrack(int track)
 {
     SMF_LOG_INFO("QuantifyTrack, track=%d", track);
     // MidiEventList& midi_events = m_midifile[track];
+    int section_first_note_flag = 0;    // 为0表示还没有遇到第一个音, 其余情况当前已经出现第一个音的是第N个小节
     for (int event=0; event< m_midifile[track].size(); event++) 
     {
         // 一个note不能越过小节线
@@ -73,18 +74,39 @@ void MidiConventer::QuantifyTrack(int track)
         if (m_midifile[track][event].isNoteOn()) 
         {
             MidiEvent* offevent = m_midifile[track][event].getLinkedEvent();
-            // 移动on也要移动off，保持音长不变
-            // QuantifyEvent(*offevent, m_duration, 0);
-            double move = QuantifyEvent(m_midifile[track][event], m_duration, 0);
-            if(offevent != nullptr) 
+            int cur_section_id = int(GetBeat(m_midifile[track][event].tick)/4.0) + 1;
+            if (cur_section_id > section_first_note_flag)
             {
+                section_first_note_flag = cur_section_id;
+                // 移动on也要移动off，保持音长不变
+                // QuantifyEvent(*offevent, m_duration, 0);
+                double move = QuantifyEvent(m_midifile[track][event], m_duration, SPECIAL_QUALIFY);
+                if(offevent != nullptr) 
+                {
 
-                offevent->tick = offevent->tick + move;
+                    offevent->tick = offevent->tick + move;
+                }
+                else
+                {
+                    // m_midifile[track].clear()
+                    SMF_LOG_ERROR("Link off event is null!");
+                }
             }
             else
             {
-                // m_midifile[track].clear()
-                SMF_LOG_ERROR("Link off event is null!");
+                // 移动on也要移动off，保持音长不变
+                // QuantifyEvent(*offevent, m_duration, 0);
+                double move = QuantifyEvent(m_midifile[track][event], m_duration, NORMAL_QUALIFY);
+                if(offevent != nullptr) 
+                {
+
+                    offevent->tick = offevent->tick + move;
+                }
+                else
+                {
+                    // m_midifile[track].clear()
+                    SMF_LOG_ERROR("Link off event is null!");
+                }
             }
         }
     }
@@ -100,7 +122,7 @@ void MidiConventer::QuantifyTrack(int track)
  * @param direction 量化方向,-1向左移动,默认移动到最近节点
  * @return 100 000 000: 错误 | 其余表示向左(负数)/右(正数)的位移量(单位: tick)
  */
-double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int direction) 
+double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, double qualify_space, int direction) 
 {
     int tpq = m_midifile.getTicksPerQuarterNote();
     SMF_LOG_INFO("Midievent.tick=%f", GetBeat(midievent.tick));
@@ -136,7 +158,7 @@ double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, int dir
     }
     int left_tick = int(left_beat*tpq);
     int right_tick = int(right_beat*tpq);
-    if (midievent.tick - left_tick > right_tick - midievent.tick)
+    if ((double)(midievent.tick - left_tick) > qualify_space * (double)(right_tick - left_tick))
         midievent.tick = right_tick;
     else
         midievent.tick = left_tick;
