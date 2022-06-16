@@ -1,0 +1,5 @@
+sudo /var/www/apps/MidiEditer/bin/Conventer /var/www/tomcat/upload_server/file/melody_1655364953.mid 3 
+0
+sudo /var/www/apps/MidiEditer/bin/ConventerSetBPM /var/www/tomcat/upload_server/file/melody_1655364953.mid 3 60
+0
+2022-06-16 15:35 以上命令执行开始结束时间差(毫秒) 38
