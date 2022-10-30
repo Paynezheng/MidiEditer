@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
     for (int track = 0; track < tracks; track++) {
         midi_conventer.QuantifyTrack(track);
         midi_conventer.CleanRecurNotes(track);
+        midi_conventer.ProlongNotes(track);
         midi_conventer.QualifyVol(track);
         midi_conventer.SetBPM(track, 100);
 

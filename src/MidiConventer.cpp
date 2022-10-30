@@ -331,6 +331,8 @@ void MidiConventer::CleanRecurNotes(int track)
         m_midifile.addEvent(track, iter->GetEndEvent());
     }
     m_midifile.sortTrack(track);
+    m_midifile.doTimeAnalysis();
+    m_midifile.linkNotePairs();
 }
 
 
@@ -343,17 +345,41 @@ void MidiConventer::ProlongNotes(int track)
 {
     SMF_LOG_DEBUG("ProlongNotes Track: %d, TicksPerQuarterNote(TPQ): %d", track, m_midifile.getTicksPerQuarterNote());
 
-    for (int event=0; event< m_midifile[track].size(); event++) 
-    {
-        if (m_midifile[track][event].isNoteOff()) 
-        {
-            if (event+1 < m_midifile[track].size() && m_midifile[track][event+1].isNoteOn())
+    // for (int event=0; event< m_midifile[track].size(); event++) 
+    // {
+    //     if (m_midifile[track][event].isNoteOff()) 
+    //     {
+    //         if (event+1 < m_midifile[track].size() && m_midifile[track][event+1].isNoteOn())
+    //         {
+    //             m_midifile[track][event].tick = m_midifile[track][event+1].tick;
+    //         }
+    //     }
+    // }
+    int tpq = m_midifile.getTicksPerQuarterNote();
+    for (int event=0; event< m_midifile[track].size(); event++) {
+        if (m_midifile[track][event].isNoteOff()) {
+            MidiEvent* onevent = m_midifile[track][event].getLinkedEvent();
+            if (onevent != nullptr && event+1 < m_midifile[track].size() && m_midifile[track][event+1].isNoteOn())
             {
-                m_midifile[track][event].tick = m_midifile[track][event+1].tick;
+                double begin_beat = GetBeat(onevent->tick);
+                double end_beat = GetBeat(m_midifile[track][event+1].tick);
+                if (end_beat - begin_beat > PROLONG_BEATS)
+                {
+                    end_beat = begin_beat + PROLONG_BEATS;
+                }
+                if (int(begin_beat) / BEATS_PER_SECTION != int(end_beat) / BEATS_PER_SECTION)
+                {
+                    end_beat = (int(end_beat) / BEATS_PER_SECTION)*BEATS_PER_SECTION;
+                }
+                int end_tick = int(end_beat) * tpq;
+                SMF_LOG_DEBUG("ProlongNotes origin end: %d, after end: %d", m_midifile[track][event].tick, end_tick);
+                m_midifile[track][event].tick = end_tick;
             }
         }
     }
     m_midifile.sortTrack(track);
+    m_midifile.doTimeAnalysis();
+    m_midifile.linkNotePairs();
 }
 
 void MidiConventer::PrintMidifile(MidiFile midifile) 
@@ -462,14 +488,14 @@ void MidiConventer::CuttingNote(MidiEvent& on, MidiEvent& off)
     double off_beat = GetBeat(off.tick);
 
     // 处理跨和弦
-    int on_chord_seq = m_chord_progression.GetChordSeq(on_beat, 0);
-    int off_chord_seq = m_chord_progression.GetChordSeq(off_beat, 1);
-    if (on_chord_seq != off_chord_seq)
-    {
-        auto chord_tuple = m_chord_progression.GetChord(on_chord_seq);
-        int end_tick = (std::get<1>(chord_tuple) + std::get<2>(chord_tuple) - 1) * m_midifile.getTicksPerQuarterNote();
-        off.tick = end_tick;
-    }
+    // int on_chord_seq = m_chord_progression.GetChordSeq(on_beat, 0);
+    // int off_chord_seq = m_chord_progression.GetChordSeq(off_beat, 1);
+    // if (on_chord_seq != off_chord_seq)
+    // {
+    //     auto chord_tuple = m_chord_progression.GetChord(on_chord_seq);
+    //     int end_tick = (std::get<1>(chord_tuple) + std::get<2>(chord_tuple) - 1) * m_midifile.getTicksPerQuarterNote();
+    //     off.tick = end_tick;
+    // }
     // 处理跨小节
     // TODO: payne
 }
