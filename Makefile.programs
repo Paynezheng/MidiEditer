@@ -2,8 +2,9 @@
 ## Makefile to compile examples programs that use the Editer library.
 ##
 ## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
+## Modified:      Payne Zheng <photosynthesi@outlook.com>
 ## Creation Date: Sun Apr  3 15:34:28 PDT 2005
-## Last Modified: Tue Feb 14 10:03:13 PST 2017
+## Last Modified: Mon Dec 27 08:25:23 UTC 2021
 ## Filename:      midiediter/Makefile.programs
 ## Website:       http://midifile.sapp.org
 ## Syntax:        GNU Makefile

@@ -35,8 +35,7 @@ namespace smf
 #define SMF_LOG_TRACE(fmt, ...) printf("[TRACE]\u001b[0;37m"); PRINT_SMF_LOG_INFO; printf(fmt, ##__VA_ARGS__); printf("\u001b[0m\n");
 #define SMF_LOG_WARN(fmt, ...) printf("[WARN]\u001b[0;33m"); PRINT_SMF_LOG_INFO; printf(fmt, ##__VA_ARGS__); printf("\u001b[0m\n");
 
-#define PRINT_SMF_LOG_INFO printf("[%s,%s][%s:%d][func:%s]\t", \  
-    __DATE__, __TIME__, __FILE__, __LINE__ , __FUNCTION__);  //); printf format; //, ##__VA_ARGS__);  
+#define PRINT_SMF_LOG_INFO printf("[%s,%s][%s:%d][func:%s]\t", __DATE__, __TIME__, __FILE__, __LINE__ , __FUNCTION__);  //); printf format; //, ##__VA_ARGS__);  
 
 enum ELogLevel
 {

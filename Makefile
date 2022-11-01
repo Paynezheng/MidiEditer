@@ -1,9 +1,9 @@
 ##
 ## Main GNU makefile for Midifile library.
 ##
-## Programmer:    Craig Stuart Sapp <craig@ccrma.stanford.edu>
-## Creation Date: Sun Apr  3 00:44:44 PST 2005
-## Last Modified: Mon Feb  9 12:59:54 PST 2015
+## Programmer:    Payne Zheng <photosynthesi@outlook.com>
+## Creation Date: Mon Dec 27 08:25:23 UTC 2021
+## Last Modified: Mon Dec 27 08:25:23 UTC 2021
 ## Filename:      midifile/Makefile
 ## Website:       http://midifile.sapp.org
 ## Syntax:        GNU Makefile

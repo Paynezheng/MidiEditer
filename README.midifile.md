@@ -20,7 +20,7 @@ Option: 从终端读取参数的一个辅助类
 Others
 ------
 
-TPQ: Ticks per quarter note.
+TPQ: Ticks per quarter note. 即每个四分音符所包含的tick数量, 这里的tick也是一个时值单位.
 
 BPM: Beat per minute.
 
