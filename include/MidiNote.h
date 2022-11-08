@@ -36,6 +36,8 @@ public:
 
 public:
     static void CutNote(MidiNote* origin_note, std::map<int, std::vector<MidiNote*>>& block_index, std::vector<MidiNote*>& result, int block_length);
+    static void CutNoteNew(MidiNote* origin_note, int idx, std::map<int, std::vector<int>>& block_index, std::vector<MidiNote*>& result, int block_length);
+
     static MidiNote* CutOneNote(MidiNote* origin_note, int begin_tick, int end_tick);
 
 private:

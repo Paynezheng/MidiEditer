@@ -18,7 +18,7 @@ namespace smf {
 
 #define SPECIAL_QUALIFY 0.6		// 中轴线量化为0.5, 0.6表示在前60%的位置上量化到左边
 #define NORMAL_QUALIFY 0.5
-#define PROLONG_BEATS 2			// 延音长度 2拍
+#define PROLONG_BEATS (0.5)			// 延音长度 0.5拍
 #define BEATS_PER_SECTION (4)		// 每小节拍数
 
 class MidiConventer {
@@ -33,6 +33,7 @@ public:
 	void		QuantifyTrack(int track);
 	void		CleanChordVoiceover(int track);
 	void		CleanRecurNotes(int track);
+	void  		CleanRecurNotesNew(int track);
 	void		ProlongNotes(int track);
 	void 		QualifyVol(int track);
 	void		SetBPM(int track, double bpm);

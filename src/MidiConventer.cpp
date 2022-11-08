@@ -75,27 +75,12 @@ void MidiConventer::QuantifyTrack(int track)
         {
             MidiEvent* offevent = m_midifile[track][event].getLinkedEvent();
             int cur_section_id = int(GetBeat(m_midifile[track][event].tick)/4.0) + 1;
-            if (cur_section_id > section_first_note_flag)
+            if (cur_section_id > section_first_note_flag && offevent != nullptr)
             {
                 section_first_note_flag = cur_section_id;
                 // 移动on也要移动off，保持音长不变
                 // QuantifyEvent(*offevent, m_duration, 0);
-                double move = QuantifyEvent(m_midifile[track][event], m_duration, SPECIAL_QUALIFY);
-                if(offevent != nullptr) 
-                {
-
-                    offevent->tick = offevent->tick + move;
-                }
-                else
-                {
-                    // m_midifile[track].clear()
-                    SMF_LOG_ERROR("Link off event is null!");
-                }
-            }
-            else
-            {
-                // 移动on也要移动off，保持音长不变
-                // QuantifyEvent(*offevent, m_duration, 0);
+                // double move = QuantifyEvent(m_midifile[track][event], m_duration, SPECIAL_QUALIFY); // 不特殊处理了
                 double move = QuantifyEvent(m_midifile[track][event], m_duration, NORMAL_QUALIFY);
                 if(offevent != nullptr) 
                 {
@@ -108,9 +93,28 @@ void MidiConventer::QuantifyTrack(int track)
                     SMF_LOG_ERROR("Link off event is null!");
                 }
             }
+            else if (offevent != nullptr)
+            {
+                // 移动on也要移动off，保持音长不变
+                // QuantifyEvent(*offevent, m_duration, 0);
+                double move = QuantifyEvent(m_midifile[track][event], m_duration, NORMAL_QUALIFY);
+                if(offevent != nullptr) 
+                {
+
+                    offevent->tick = offevent->tick + move;
+
+                }
+                else
+                {
+                    // m_midifile[track].clear()
+                    SMF_LOG_ERROR("Link off event is null!");
+                }
+            }
         }
     }
     m_midifile.sortTrack(track);
+    m_midifile.doTimeAnalysis();
+    m_midifile.linkNotePairs();
 }
 
 /**
@@ -149,12 +153,14 @@ double MidiConventer::QuantifyEvent(MidiEvent& midievent, int unit_size, double 
     // 向左移
     if (direction == -1) 
     {
-        midievent.tick = int((left_beat - 4.0 / unit_size)*tpq);
+        midievent.tick = int(left_beat*tpq);
         return midievent.tick - tmp;
     }
     else if(direction == 1) 
     {
         // TODO:
+        midievent.tick = int(right_beat*tpq);
+        return midievent.tick - tmp;
     }
     int left_tick = int(left_beat*tpq);
     int right_tick = int(right_beat*tpq);
@@ -254,7 +260,13 @@ void MidiConventer::CleanRecurNotes(int track)
     //     }
     // }
 
+    // todo... 修复去重是多个音的时候会两个变化音来回横跳的bug --> 修成保留长的音
+    // 修复把音裁剪成同一个音重复的样子 --> 原因: 也是因为有长音出现
+
+
     // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
+
+
     MidiNote* last_note = nullptr;
     int last_block_id = -1;
     for (auto& iter : block_index) 
@@ -270,6 +282,9 @@ void MidiConventer::CleanRecurNotes(int track)
                 {
                     SMF_LOG_DEBUG("find same note to last block")
                     iter.second.erase(the_same_note);
+                    // iter.second.clear();
+                    // iter.second.emplace_back(last_note);
+                    // last_block_id = iter.first;
                 }
             }
             // 随机保留一个音,其他的音全部删除
@@ -294,6 +309,7 @@ void MidiConventer::CleanRecurNotes(int track)
         }
         SMF_LOG_DEBUG("after clean block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
     }
+
     // for (auto iter:block_index)
     // {
     //     // SMF_LOG_WARN("block_index: %d", iter.first);
@@ -309,6 +325,160 @@ void MidiConventer::CleanRecurNotes(int track)
     {
         tmp_notes.clear();
         MidiNote::CutNote(note, block_index, tmp_notes, block_length);
+        for(auto it:tmp_notes) 
+        {
+            new_notes.insert(it);
+        }
+    }
+
+    // 清理原先的事件
+    for (int event=0; event< m_midifile[track].size(); event++) 
+    {
+        if (m_midifile[track][event].isNote())
+        {
+            m_midifile[track][event].clear();
+        }
+    }
+    m_midifile.removeEmpties();
+    // 将分割后的事件写入midi
+    for (auto iter : new_notes)
+    {   
+        m_midifile.addEvent(track, iter->GetBeginEvent());
+        m_midifile.addEvent(track, iter->GetEndEvent());
+    }
+    m_midifile.sortTrack(track);
+    m_midifile.doTimeAnalysis();
+    m_midifile.linkNotePairs();
+}
+
+
+void MidiConventer::CleanRecurNotesNew(int track)
+{
+    SMF_LOG_DEBUG("CleanRecurNotes Track: %d", track);
+    // MidiEventList midi_events = m_midifile[track];
+    int block_length = 4.0 / m_duration*(m_midifile.getTicksPerQuarterNote());
+    SMF_LOG_DEBUG("TicksperQuaterNote: %d, block_length: %d", m_midifile.getTicksPerQuarterNote(), block_length);
+    std::vector<MidiNote*> notes;                           // [notes] 表示所以音
+    std::map<int, std::vector<int>> block_index;      // block_id -> [note], block_id: 0 -- n-1
+    // 将所有的事件读到note中, 并保存每个区块包含哪些音
+    for (int event=0; event< m_midifile[track].size(); event++) 
+    {
+        if (m_midifile[track][event].isNoteOn()) {
+            MidiEvent* offevent = m_midifile[track][event].getLinkedEvent();
+            if (offevent != nullptr && offevent->tick > m_midifile[track][event].tick) 
+            {
+                MidiNote* new_note = new MidiNote(m_midifile[track][event], (*offevent));
+                notes.push_back(new_note);
+                int note_idx = notes.size() - 1;
+                int begin_tick  = new_note->GetBeginTick() / block_length * block_length;  // 这个begin 应该是开始位置的那个block的位置
+                int end_tick    = new_note->GetEndTick();
+                while(begin_tick < end_tick) 
+                {
+                    int block_id = begin_tick/block_length;
+                    begin_tick += block_length;
+                    if (block_index.count(block_id) == 0)
+                    {
+                        block_index.emplace(block_id, std::vector<int>());
+                    }
+                    block_index[block_id].push_back(note_idx);
+                    // block_index[block_id].push_back(new_note);
+                } 
+            }
+            else 
+            {
+                SMF_LOG_ERROR("Link off event is null off_event nullptr, MidiEvent seq: %d", m_midifile[track][event].seq);
+            }
+        }
+    }
+
+    // for (auto iter:block_index)
+    // {
+    //     // SMF_LOG_WARN("block_index: %d", iter.first);
+    //     for (auto note:iter.second)
+    //     {
+    //         SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
+    //     }
+    // }
+
+    // todo... 修复去重是多个音的时候会两个变化音来回横跳的bug --> 修成保留长的音
+    // 修复把音裁剪成同一个音重复的样子
+
+
+    // 删除过后每个区间只有一个音, 上一block出现过的音本block不再出现
+
+
+    int last_note = -1;
+    int last_block_id = -1;
+    for (auto& iter : block_index) 
+    {
+        SMF_LOG_DEBUG("before clean block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
+        if (iter.second.size() > 1) 
+        {
+            // 当上一小节有音出现
+            if (last_note != -1 && last_block_id == iter.first - 1)
+            {   
+                auto the_same_note = find(iter.second.begin(), iter.second.end(), last_note);
+                if (the_same_note != iter.second.end())
+                {
+                    SMF_LOG_DEBUG("find same note to last block")
+                    // iter.second.erase(the_same_note);
+                    iter.second.clear();
+                    iter.second.push_back(last_note);
+                    last_block_id = iter.first;
+                }
+                else
+                {
+                    // 随机保留一个音,其他的音全部删除
+                    int save_note_index = rand() % iter.second.size();
+                    int tmp = iter.second[save_note_index];
+                    iter.second.clear();
+                    iter.second.push_back(tmp);
+                    // 临时变量表示此block使用的音和block_id
+                    last_note = tmp;
+                    last_block_id = iter.first;
+                }
+            }
+            else
+            {
+                // 随机保留一个音,其他的音全部删除
+                int save_note_index = rand() % iter.second.size();
+                int tmp = iter.second[save_note_index];
+                iter.second.clear();
+                iter.second.push_back(tmp);
+                // 临时变量表示此block使用的音和block_id
+                last_note = tmp;
+                last_block_id = iter.first;
+            }
+        }
+        else if (iter.second.size() == 1)
+        {
+            int tmp = iter.second[0];
+            last_note = tmp;
+            last_block_id = iter.first;
+        }
+        else
+        {
+            last_note = -1;
+            last_block_id = iter.first;
+        }
+        SMF_LOG_DEBUG("after clean block_index: %d, block_notes_num: %ld", iter.first, iter.second.size())
+    }
+
+    // for (auto iter:block_index)
+    // {
+    //     // SMF_LOG_WARN("block_index: %d", iter.first);
+    //     for (auto note:iter.second)
+    //     {
+    //         SMF_LOG_ERROR("block_index:%d, block_note: note", iter.first);
+    //     }
+    // }
+
+    std::vector<MidiNote*>  tmp_notes;
+    std::set<MidiNote*>     new_notes;
+    for (int idx = 0; idx < notes.size(); idx ++) 
+    {
+        tmp_notes.clear();
+        MidiNote::CutNoteNew(notes[idx], idx, block_index, tmp_notes, block_length);
         for(auto it:tmp_notes) 
         {
             new_notes.insert(it);
@@ -363,17 +533,24 @@ void MidiConventer::ProlongNotes(int track)
             {
                 double begin_beat = GetBeat(onevent->tick);
                 double end_beat = GetBeat(m_midifile[track][event+1].tick);
-                if (end_beat - begin_beat > PROLONG_BEATS)
-                {
-                    end_beat = begin_beat + PROLONG_BEATS;
-                }
+                // if (end_beat - begin_beat > PROLONG_BEATS)
+                // {
+                //     end_beat = begin_beat + PROLONG_BEATS;
+                // }
+
+                end_beat = int(end_beat/(4.0/m_duration)) * (4.0/m_duration);
                 if (int(begin_beat) / BEATS_PER_SECTION != int(end_beat) / BEATS_PER_SECTION)
                 {
                     end_beat = (int(end_beat) / BEATS_PER_SECTION)*BEATS_PER_SECTION;
                 }
-                int end_tick = int(end_beat) * tpq;
+
+                int end_tick = int(end_beat * tpq);
                 SMF_LOG_DEBUG("ProlongNotes origin end: %d, after end: %d", m_midifile[track][event].tick, end_tick);
                 m_midifile[track][event].tick = end_tick;
+            }
+            else
+            {
+                SMF_LOG_DEBUG("have not pair");
             }
         }
     }
